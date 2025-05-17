@@ -15,31 +15,28 @@
       min-height: 100vh;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
     /* Logout button styling */
     #logoutBtn {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  z-index: 10000;  /* high z-index so it’s always on top */
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-}
-
+      width: 100%;
+    padding: 12px;
+    background-color: #0044cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    }
 
     #logoutBtn:hover {
       background-color: #c0392b;
+    }
+
+    /* Push the heading down so it's not overlapped by the fixed logout button */
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      margin-top: 70px; /* space for fixed button */
+      color: #34495e;
     }
 
     /* Container for cards */
@@ -252,8 +249,8 @@
     }
 
     function logout() {
-      // You can clear any session storage or cookies here if you use them
-      window.location.href = '/index.html'; // Redirect to index.html on logout
+      // Clear any session or auth tokens here if needed
+      window.location.href = '/index.html'; // Redirect to root index.html
     }
 
     loadHomestays();
