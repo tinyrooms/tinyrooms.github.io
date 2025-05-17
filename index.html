@@ -75,24 +75,27 @@
       margin-bottom: 20px;
     }
     footer {
-      text-align: center;
-      padding: 20px;
-      background: #eee;
-      margin-top: 40px;
-    }
-    /* Smaller font on medium screens */
+  font-size: 1rem;
+  text-align: center;
+  padding: 16px;
+  white-space: nowrap; /* Prevent line break */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Shrink font size on smaller screens */
 @media (max-width: 768px) {
   footer {
     font-size: 0.9rem;
   }
 }
 
-/* Even smaller font on small screens */
 @media (max-width: 480px) {
   footer {
     font-size: 0.8rem;
   }
 }
+
   </style>
 </head>
 <body>
@@ -116,15 +119,14 @@
   <script src="/js/firebase-config.js"></script>
   <script src="/js/login.js"></script>
 
-<footer>
-  <div class="footer-content">
-    <p>&copy; 2025 tinyrooms. All rights reserved.</p>
-    <nav class="footer-links">
-      <a href="terms.html" target="_blank" rel="noopener">Terms & Conditions</a>
-      <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
-    </nav>
-  </div>
-</footer>
+  <footer style="text-align: center; padding: 16px; font-size: 1rem; flex-wrap: wrap;">
+    <p style="margin: 0;">
+      © 2025 tinyrooms. All rights reserved.</p>
+      <span class="footer-links">
+        <a href="privacy.html">Privacy Policy</a> | <a href="terms.html">Terms & Conditions</a>
+      </span>
+    </p>
+  </footer>
 
 <style>
   footer {
