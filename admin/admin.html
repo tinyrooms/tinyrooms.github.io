@@ -22,19 +22,21 @@
 
     /* Logout button styling */
     #logoutBtn {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background-color: #e74c3c;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      z-index: 1000;
-    }
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  z-index: 10000;  /* high z-index so it’s always on top */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
 
     #logoutBtn:hover {
       background-color: #c0392b;
