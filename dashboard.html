@@ -263,165 +263,50 @@
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
+<script src="/js/firebase-config.js"></script>
+<script src="/js/dashboard.js"></script>
 
-<script>
-  const homestayId = localStorage.getItem('homestayId');
-  const homestayNameEl = document.getElementById('homestayName');
-  const occupancyEl = document.getElementById('occupancy');
-  const guestsCardsContainer = document.getElementById('guestsCardsContainer');
-  const searchInput = document.getElementById('searchInput');
-  const editModal = document.getElementById('editModal');
-  const editName = document.getElementById('editName');
-  const editPhone = document.getElementById('editPhone');
-  const editAge = document.getElementById('editAge');
-  const editRoom = document.getElementById('editRoom');
-  const editCheckin = document.getElementById('editCheckin');
-  const editCheckout = document.getElementById('editCheckout');
-  const editPricePerNight = document.getElementById('editPricePerNight');
-  const ordersContainer = document.getElementById('ordersContainer');
-  const totalBillEl = document.getElementById('totalBill');
-  let currentGuestId = null;
-  let allGuests = [];
+<footer>
+  <div class="footer-content">
+    <p>&copy; 2025 tinyrooms. All rights reserved.</p>
+    <nav class="footer-links">
+      <a href="terms.html" target="_blank" rel="noopener">Terms & Conditions</a>
+      <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+    </nav>
+  </div>
+</footer>
 
-  if (!homestayId) {
-    alert('Not logged in. Redirecting...');
-    window.location.href = 'index.html';
+<style>
+  footer {
+    background-color: #f5f7fa;
+    color: #2c3e50;
+    padding: 20px 15px;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    margin-top: 40px;
   }
 
-  document.getElementById('logoutBtn').onclick = () => {
-    localStorage.clear();
-    window.location.href = 'index.html';
-  };
-
-  document.getElementById('addGuestBtn').onclick = () => {
-    window.location.href = 'checkin.html';
-  };
-
-  document.getElementById('addOrderBtn').onclick = () => addOrderRow();
-  document.getElementById('calculateBillBtn').onclick = calculateTotalBill;
-
-  document.getElementById('saveGuestBtn').onclick = async () => {
-    const updatedData = {
-      name: editName.value,
-      phone: editPhone.value,
-      age: parseInt(editAge.value),
-      room: editRoom.value,
-      checkin: editCheckin.value,
-      checkout: editCheckout.value,
-      pricePerNight: parseFloat(editPricePerNight.value),
-      orders: Array.from(ordersContainer.children).map(row => ({
-        item: row.querySelector('.orderItem').value,
-        qty: parseInt(row.querySelector('.orderQty').value),
-        price: parseFloat(row.querySelector('.orderPrice').value)
-      }))
-    };
-    await db.collection('guests').doc(currentGuestId).update(updatedData);
-    closeModal();
-  };
-
-  function addOrderRow(order = { item: '', qty: 1, price: 0 }) {
-    const row = document.createElement('div');
-    row.className = 'order-row';
-    row.innerHTML = `
-      <input type="text" class="orderItem" placeholder="Item" value="${order.item}">
-      <input type="number" class="orderQty" placeholder="Qty" value="${order.qty}">
-      <input type="number" class="orderPrice" placeholder="Price" value="${order.price}">
-      <button onclick="this.parentElement.remove()">X</button>
-    `;
-    ordersContainer.appendChild(row);
+  .footer-content {
+    max-width: 900px;
+    margin: 0 auto;
   }
 
-  function calculateTotalBill() {
-    const checkin = new Date(editCheckin.value);
-    const checkout = new Date(editCheckout.value);
-    const nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
-    const price = parseFloat(editPricePerNight.value);
-    const stayCost = nights * price;
-
-    const ordersTotal = Array.from(ordersContainer.children).reduce((sum, row) => {
-      const qty = parseInt(row.querySelector('.orderQty').value);
-      const price = parseFloat(row.querySelector('.orderPrice').value);
-      return sum + qty * price;
-    }, 0);
-
-    totalBillEl.textContent = `Total Bill: ₹${stayCost + ordersTotal}`;
+  .footer-links {
+    margin-top: 8px;
   }
 
-  function openEditModal(guest) {
-    currentGuestId = guest.id;
-    editName.value = guest.name;
-    editPhone.value = guest.phone;
-    editAge.value = guest.age;
-    editRoom.value = guest.room || '';
-    editCheckin.value = guest.checkin;
-    editCheckout.value = guest.checkout;
-    editPricePerNight.value = guest.pricePerNight || 0;
-    ordersContainer.innerHTML = '';
-    (guest.orders || []).forEach(addOrderRow);
-    totalBillEl.textContent = '';
-    editModal.style.display = 'flex';
+  .footer-links a {
+    color: #3498db;
+    margin: 0 12px;
+    text-decoration: none;
+    font-weight: 600;
   }
 
-  function closeModal() {
-    editModal.style.display = 'none';
+  .footer-links a:hover {
+    text-decoration: underline;
   }
-
-  function renderGuests(guests) {
-    guestsCardsContainer.innerHTML = '';
-    guests.forEach(guest => {
-      const checkinDate = new Date(guest.checkin).toLocaleString();
-      const card = document.createElement('div');
-      card.className = 'guest-card';
-      card.innerHTML = `
-        <h3>${guest.name}</h3>
-        <p>Phone: ${guest.phone}</p>
-        <p>Room: ${guest.room || 'N/A'}</p>
-        <p>Age: ${guest.age}</p>
-        <p>Check-in: ${checkinDate}</p>
-        <p>Orders: ${guest.orders?.length || 0}</p>
-        <div class="actions">
-          <button onclick='openEditModal(${JSON.stringify(guest)})'>Edit</button>
-          <button class="delete" onclick='deleteGuest("${guest.id}")'>Delete</button>
-        </div>
-      `;
-      guestsCardsContainer.appendChild(card);
-    });
-  }
-
-  async function deleteGuest(id) {
-    if (confirm('Delete this guest?')) {
-      await db.collection('guests').doc(id).delete();
-    }
-  }
-
-  searchInput.addEventListener('input', () => {
-    const term = searchInput.value.toLowerCase();
-    const filtered = allGuests.filter(g =>
-      g.name.toLowerCase().includes(term) ||
-      g.phone.toLowerCase().includes(term) ||
-      (g.room && g.room.toLowerCase().includes(term))
-    );
-    renderGuests(filtered);
-  });
-
-  editModal.addEventListener('click', (e) => {
-    if (e.target === editModal) closeModal();
-  });
-
-  // 🔥 Real-time listeners for auto update
-  db.collection('homestays').doc(homestayId).get().then(doc => {
-    homestayNameEl.textContent = doc.data()?.name || 'Homestay';
-  });
-
-  db.collection('guests')
-    .where('homestayId', '==', homestayId)
-    .onSnapshot(snapshot => {
-      allGuests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      occupancyEl.textContent = `Currently ${allGuests.length} guest(s) staying`;
-      renderGuests(allGuests);
-    });
-</script>
+</style>
 
 </body>
 </html>

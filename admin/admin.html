@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard - Homestays</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f4f6f8;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    /* Logout button styling */
+    #logoutBtn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      z-index: 1000;
+    }
+
+    #logoutBtn:hover {
+      background-color: #c0392b;
+    }
+
+    /* Container for cards */
+    #cardsContainer {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding-top: 10px;
+    }
+
+    /* Individual card styling */
+    .homestay-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .homestay-card:hover {
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    }
+
+    .homestay-field {
+      font-size: 1rem;
+      color: #2c3e50;
+    }
+
+    .homestay-label {
+      font-weight: 600;
+      margin-right: 6px;
+      color: #34495e;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      color: white;
+      user-select: none;
+    }
+
+    .subscribed-status {
+      background-color: #2ecc71;
+    }
+
+    .not-subscribed-status {
+      background-color: #e67e22;
+    }
+
+    .blocked-status {
+      background-color: #e74c3c;
+    }
+
+    .not-blocked-status {
+      background-color: #95a5a6;
+    }
+
+    .button-group {
+      margin-top: 12px;
+      display: flex;
+      gap: 12px;
+    }
+
+    button {
+      flex: 1;
+      padding: 10px 0;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      color: white;
+      user-select: none;
+    }
+
+    button.subscribe-btn {
+      background-color: #2ecc71;
+    }
+    button.subscribe-btn:hover {
+      background-color: #27ae60;
+    }
+
+    button.unsubscribe-btn {
+      background-color: #e67e22;
+    }
+    button.unsubscribe-btn:hover {
+      background-color: #d35400;
+    }
+
+    button.block-btn {
+      background-color: #e74c3c;
+    }
+    button.block-btn:hover {
+      background-color: #c0392b;
+    }
+
+    button.unblock-btn {
+      background-color: #65ff65;
+      color: #2c3e50;
+    }
+    button.unblock-btn:hover {
+      background-color: #66d666;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 400px) {
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button id="logoutBtn" onclick="logout()">Logout</button>
+
+  <h1>Admin Dashboard</h1>
+  <div id="cardsContainer">
+    <!-- Cards will be injected here -->
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="/js/firebase-config.js"></script>
+
+  <script>
+    const cardsContainer = document.getElementById('cardsContainer');
+
+    function createCard(id, data) {
+      const card = document.createElement('div');
+      card.classList.add('homestay-card');
+
+      card.innerHTML = `
+        <div class="homestay-field"><span class="homestay-label">Name:</span> ${data.name}</div>
+        <div class="homestay-field"><span class="homestay-label">Username:</span> ${data.username}</div>
+        <div class="homestay-field"><span class="homestay-label">Phone:</span> +91 ${data.phone || 'N/A'}</div>
+        <div class="homestay-field"><span class="homestay-label">Total Rooms:</span> ${data.totalRooms}</div>
+        <div class="homestay-field">
+          <span class="homestay-label">Subscribed:</span>
+          <span class="status ${data.subscribed ? 'subscribed-status' : 'not-subscribed-status'}">
+            ${data.subscribed ? 'Yes' : 'No'}
+          </span>
+        </div>
+        <div class="homestay-field">
+          <span class="homestay-label">Blocked:</span>
+          <span class="status ${data.blocked ? 'blocked-status' : 'not-blocked-status'}">
+            ${data.blocked ? 'Yes' : 'No'}
+          </span>
+        </div>
+        <div class="button-group">
+          <button
+            class="${data.subscribed ? 'unsubscribe-btn' : 'subscribe-btn'}"
+            onclick="toggleSubscribe('${id}', ${data.subscribed})"
+          >
+            ${data.subscribed ? 'Unsubscribe' : 'Subscribe'}
+          </button>
+          <button
+            class="${data.blocked ? 'unblock-btn' : 'block-btn'}"
+            onclick="toggleBlock('${id}', ${data.blocked})"
+          >
+            ${data.blocked ? 'Unblock' : 'Block'}
+          </button>
+        </div>
+      `;
+      return card;
+    }
+
+    async function toggleSubscribe(id, currentStatus) {
+      try {
+        await db.collection('homestays').doc(id).update({ subscribed: !currentStatus });
+      } catch (err) {
+        alert('Error updating subscription status: ' + err.message);
+      }
+    }
+
+    async function toggleBlock(id, currentStatus) {
+      try {
+        await db.collection('homestays').doc(id).update({ blocked: !currentStatus });
+      } catch (err) {
+        alert('Error updating block status: ' + err.message);
+      }
+    }
+
+    function loadHomestays() {
+      db.collection('homestays').onSnapshot(snapshot => {
+        cardsContainer.innerHTML = '';
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const card = createCard(doc.id, {
+            name: data.name,
+            username: data.username,
+            phone: data.phone || '',
+            totalRooms: data.totalRooms,
+            subscribed: data.subscribed ?? false,
+            blocked: data.blocked ?? false,
+          });
+          cardsContainer.appendChild(card);
+        });
+      }, err => {
+        cardsContainer.innerHTML = '<p style="text-align:center; color:red;">Error loading homestays: ' + err.message + '</p>';
+      });
+    }
+
+    function logout() {
+      // You can clear any session storage or cookies here if you use them
+      window.location.href = '/index.html'; // Redirect to index.html on logout
+    }
+
+    loadHomestays();
+  </script>
+</body>
+</html>

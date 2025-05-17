@@ -29,14 +29,22 @@ loginForm.addEventListener("submit", async (e) => {
     const homestayDoc = querySnapshot.docs[0];
     const data = homestayDoc.data();
 
-    if (data.password === password) {
-      // Login successful - save homestayId locally and redirect
-      localStorage.setItem("homestayId", homestayDoc.id);
-      localStorage.setItem("homestayName", data.name);
-      window.location.href = "dashboard.html";
-    } else {
+    if (data.password !== password) {
       errorDiv.textContent = "Invalid username or password.";
+      return;
     }
+
+    // 🚫 Check if user is blocked
+    if (data.blocked === true) {
+      errorDiv.textContent =
+        "Your access has been blocked. Please contact support.";
+      return;
+    }
+
+    // ✅ Login successful - save data and redirect
+    localStorage.setItem("homestayId", homestayDoc.id);
+    localStorage.setItem("homestayName", data.name);
+    window.location.href = "dashboard.html";
   } catch (error) {
     errorDiv.textContent = "Error during login: " + error.message;
   }

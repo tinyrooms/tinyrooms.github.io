@@ -58,8 +58,13 @@
       color: white;
     }
 
-    button[type="submit"]:hover {
+    button[type="submit"]:hover:not(:disabled) {
       background-color: #27ae60;
+    }
+
+    button[type="submit"]:disabled {
+      background-color: #8ed1a3;
+      cursor: not-allowed;
     }
 
     #backBtn {
@@ -85,6 +90,36 @@
     .success {
       color: green;
     }
+
+    footer {
+      background-color: #f5f7fa;
+      color: #2c3e50;
+      padding: 20px 15px;
+      text-align: center;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem;
+      margin-top: 40px;
+    }
+  
+    .footer-content {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+  
+    .footer-links {
+      margin-top: 8px;
+    }
+  
+    .footer-links a {
+      color: #3498db;
+      margin: 0 12px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -94,27 +129,41 @@
   <div id="message"></div>
   <form id="registerForm">
     <label for="name">Homestay Name</label>
-    <input id="name" type="text" required autocomplete="off" />
+    <input id="name" name="name" type="text" required autocomplete="off" />
 
     <label for="username">Username</label>
-    <input id="username" type="text" required autocomplete="off" />
+    <input id="username" name="username" type="text" required autocomplete="off" />
 
     <label for="password">Password</label>
-    <input id="password" type="password" required autocomplete="off" />
+    <input id="password" name="password" type="password" required autocomplete="off" />
 
     <label for="totalRooms">Total Rooms</label>
-    <input id="totalRooms" type="number" min="1" required />
+    <input id="totalRooms" name="totalRooms" type="number" min="1" required />
+
+    <label for="phone">Phone Number</label>
+    <input id="phone" name="phone" type="tel" required autocomplete="off" pattern="[0-9]{10}" placeholder="Enter 10-digit phone number" />
 
     <button type="submit">Create Account</button>
   </form>
 
+  <footer>
+    <div class="footer-content">
+      <p>&copy; 2025 tinyrooms. All <a href="/admin/adminlogin.html" style="text-decoration: none; color: inherit;">rights</a> reserved.</p>
+      <nav class="footer-links">
+        <a href="terms.html" target="_blank" rel="noopener">Terms & Conditions</a>
+        <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+      </nav>
+    </div>
+  </footer>
+
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js"></script>
+  <script src="/js/firebase-config.js"></script>
 
   <script>
     const registerForm = document.getElementById('registerForm');
     const messageDiv = document.getElementById('message');
+    const submitBtn = registerForm.querySelector('button[type="submit"]');
 
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -125,12 +174,26 @@
       const username = registerForm.username.value.trim();
       const password = registerForm.password.value.trim();
       const totalRooms = Number(registerForm.totalRooms.value);
+      const phoneRaw = registerForm.phone.value.trim();
 
-      if (!name || !username || !password || !totalRooms) {
+      if (!name || !username || !password || !totalRooms || !phoneRaw) {
         messageDiv.textContent = 'Please fill all fields correctly.';
         messageDiv.className = 'error';
         return;
       }
+
+      // Validate phone number pattern manually as well
+      const phonePattern = /^[0-9]{10}$/;
+      if (!phonePattern.test(phoneRaw)) {
+        messageDiv.textContent = 'Phone number must be exactly 10 digits.';
+        messageDiv.className = 'error';
+        return;
+      }
+
+      const phone = '+91' + phoneRaw;  // Add +91 prefix
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating Account...';
 
       try {
         const snapshot = await db.collection('homestays')
@@ -140,6 +203,8 @@
         if (!snapshot.empty) {
           messageDiv.textContent = 'Username already exists. Choose another.';
           messageDiv.className = 'error';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Account';
           return;
         }
 
@@ -147,15 +212,20 @@
           name,
           username,
           password,
-          totalRooms
+          totalRooms,
+          phone  // Save phone with +91 prefix
         });
 
         messageDiv.textContent = 'Account created successfully! You can now log in.';
         messageDiv.className = 'success';
         registerForm.reset();
+        submitBtn.textContent = 'Create Account';
+        submitBtn.disabled = false;
       } catch (error) {
         messageDiv.textContent = 'Error creating account: ' + error.message;
         messageDiv.className = 'error';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Account';
       }
     });
   </script>
