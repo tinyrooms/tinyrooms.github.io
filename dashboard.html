@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Homestay Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #f0f4f8;
+      color: #333;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      color: #2c3e50;
+    }
+
+    .buttons button {
+      margin-left: 10px;
+      padding: 10px 16px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background: #3498db;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .buttons button:hover {
+      background: #2980b9;
+    }
+
+    section h2 {
+      margin-top: 30px;
+      font-size: 1.4rem;
+      color: #2c3e50;
+    }
+
+    #occupancy {
+      font-weight: 600;
+      margin: 10px 0 20px;
+    }
+
+    #searchInput {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    .cards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .guest-card {
+      background: #fff;
+      padding: 16px;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      transition: transform 0.2s ease;
+    }
+
+    .guest-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .guest-card h3 {
+      margin: 0 0 5px;
+      font-size: 1.2rem;
+      color: #34495e;
+    }
+
+    .guest-card p {
+      margin: 4px 0;
+      font-size: 0.95rem;
+    }
+
+    .guest-card .actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .guest-card .actions button {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .guest-card .actions button:first-child {
+      background-color: #27ae60;
+      color: white;
+    }
+
+    .guest-card .actions button.delete {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 600px;
+      width: 100%;
+      overflow-y: auto;
+      max-height: 90vh;
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+      font-size: 1.5rem;
+      color: #2c3e50;
+    }
+
+    .modal-content label {
+      display: block;
+      margin: 12px 0 5px;
+      font-weight: 600;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .order-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .order-row input {
+      flex: 1;
+    }
+
+    .order-row button {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #addOrderBtn, #calculateBillBtn {
+      margin-top: 10px;
+      padding: 10px;
+      background: #2980b9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #saveGuestBtn, #cancelBtn {
+      margin-top: 20px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    #saveGuestBtn {
+      background: #2ecc71;
+      color: white;
+      margin-right: 10px;
+    }
+
+    #saveGuestBtn:hover {
+      background: #27ae60;
+    }
+
+    #cancelBtn {
+      background: #bdc3c7;
+      color: #2c3e50;
+    }
+
+    #cancelBtn:hover {
+      background: #95a5a6;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1 id="homestayName">Homestay</h1>
+  <div class="buttons">
+    <button id="addGuestBtn">Add Guest</button>
+    <button id="logoutBtn">Logout</button>
+  </div>
+</header>
+
+<section>
+  <h2>Current Occupancy</h2>
+  <div id="occupancy">Loading...</div>
+</section>
+
+<section>
+  <input type="text" id="searchInput" placeholder="Search guests by name, phone, or room...">
+  <h2>Guests</h2>
+  <div class="cards-container" id="guestsCardsContainer">Loading guests...</div>
+</section>
+
+<div class="modal" id="editModal">
+  <div class="modal-content">
+    <h2>Edit Guest</h2>
+    <label>Name: <input type="text" id="editName"></label>
+    <label>Phone: <input type="text" id="editPhone"></label>
+    <label>Age: <input type="number" id="editAge"></label>
+    <label>Room No: <input type="text" id="editRoom"></label>
+    <label>Check-in: <input type="datetime-local" id="editCheckin"></label>
+    <label>Check-out: <input type="datetime-local" id="editCheckout"></label>
+    <label>Price per Night: <input type="number" id="editPricePerNight"></label>
+    <h3>Orders</h3>
+    <div id="ordersContainer"></div>
+    <button id="addOrderBtn">+ Add Order</button>
+    <h3>Total</h3>
+    <button id="calculateBillBtn">Calculate Total Bill</button>
+    <p id="totalBill"></p>
+    <button id="saveGuestBtn">Save</button>
+    <button id="cancelBtn" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+
+<script>
+  const homestayId = localStorage.getItem('homestayId');
+  const homestayNameEl = document.getElementById('homestayName');
+  const occupancyEl = document.getElementById('occupancy');
+  const guestsCardsContainer = document.getElementById('guestsCardsContainer');
+  const searchInput = document.getElementById('searchInput');
+  const editModal = document.getElementById('editModal');
+  const editName = document.getElementById('editName');
+  const editPhone = document.getElementById('editPhone');
+  const editAge = document.getElementById('editAge');
+  const editRoom = document.getElementById('editRoom');
+  const editCheckin = document.getElementById('editCheckin');
+  const editCheckout = document.getElementById('editCheckout');
+  const editPricePerNight = document.getElementById('editPricePerNight');
+  const ordersContainer = document.getElementById('ordersContainer');
+  const totalBillEl = document.getElementById('totalBill');
+  let currentGuestId = null;
+  let allGuests = [];
+
+  if (!homestayId) {
+    alert('Not logged in. Redirecting...');
+    window.location.href = 'index.html';
+  }
+
+  document.getElementById('logoutBtn').onclick = () => {
+    localStorage.clear();
+    window.location.href = 'index.html';
+  };
+
+  document.getElementById('addGuestBtn').onclick = () => {
+    window.location.href = 'checkin.html';
+  };
+
+  document.getElementById('addOrderBtn').onclick = () => addOrderRow();
+  document.getElementById('calculateBillBtn').onclick = calculateTotalBill;
+
+  document.getElementById('saveGuestBtn').onclick = async () => {
+    const updatedData = {
+      name: editName.value,
+      phone: editPhone.value,
+      age: parseInt(editAge.value),
+      room: editRoom.value,
+      checkin: editCheckin.value,
+      checkout: editCheckout.value,
+      pricePerNight: parseFloat(editPricePerNight.value),
+      orders: Array.from(ordersContainer.children).map(row => ({
+        item: row.querySelector('.orderItem').value,
+        qty: parseInt(row.querySelector('.orderQty').value),
+        price: parseFloat(row.querySelector('.orderPrice').value)
+      }))
+    };
+    await db.collection('guests').doc(currentGuestId).update(updatedData);
+    closeModal();
+  };
+
+  function addOrderRow(order = { item: '', qty: 1, price: 0 }) {
+    const row = document.createElement('div');
+    row.className = 'order-row';
+    row.innerHTML = `
+      <input type="text" class="orderItem" placeholder="Item" value="${order.item}">
+      <input type="number" class="orderQty" placeholder="Qty" value="${order.qty}">
+      <input type="number" class="orderPrice" placeholder="Price" value="${order.price}">
+      <button onclick="this.parentElement.remove()">X</button>
+    `;
+    ordersContainer.appendChild(row);
+  }
+
+  function calculateTotalBill() {
+    const checkin = new Date(editCheckin.value);
+    const checkout = new Date(editCheckout.value);
+    const nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
+    const price = parseFloat(editPricePerNight.value);
+    const stayCost = nights * price;
+
+    const ordersTotal = Array.from(ordersContainer.children).reduce((sum, row) => {
+      const qty = parseInt(row.querySelector('.orderQty').value);
+      const price = parseFloat(row.querySelector('.orderPrice').value);
+      return sum + qty * price;
+    }, 0);
+
+    totalBillEl.textContent = `Total Bill: ₹${stayCost + ordersTotal}`;
+  }
+
+  function openEditModal(guest) {
+    currentGuestId = guest.id;
+    editName.value = guest.name;
+    editPhone.value = guest.phone;
+    editAge.value = guest.age;
+    editRoom.value = guest.room || '';
+    editCheckin.value = guest.checkin;
+    editCheckout.value = guest.checkout;
+    editPricePerNight.value = guest.pricePerNight || 0;
+    ordersContainer.innerHTML = '';
+    (guest.orders || []).forEach(addOrderRow);
+    totalBillEl.textContent = '';
+    editModal.style.display = 'flex';
+  }
+
+  function closeModal() {
+    editModal.style.display = 'none';
+  }
+
+  function renderGuests(guests) {
+    guestsCardsContainer.innerHTML = '';
+    guests.forEach(guest => {
+      const checkinDate = new Date(guest.checkin).toLocaleString();
+      const card = document.createElement('div');
+      card.className = 'guest-card';
+      card.innerHTML = `
+        <h3>${guest.name}</h3>
+        <p>Phone: ${guest.phone}</p>
+        <p>Room: ${guest.room || 'N/A'}</p>
+        <p>Age: ${guest.age}</p>
+        <p>Check-in: ${checkinDate}</p>
+        <p>Orders: ${guest.orders?.length || 0}</p>
+        <div class="actions">
+          <button onclick='openEditModal(${JSON.stringify(guest)})'>Edit</button>
+          <button class="delete" onclick='deleteGuest("${guest.id}")'>Delete</button>
+        </div>
+      `;
+      guestsCardsContainer.appendChild(card);
+    });
+  }
+
+  async function deleteGuest(id) {
+    if (confirm('Delete this guest?')) {
+      await db.collection('guests').doc(id).delete();
+    }
+  }
+
+  searchInput.addEventListener('input', () => {
+    const term = searchInput.value.toLowerCase();
+    const filtered = allGuests.filter(g =>
+      g.name.toLowerCase().includes(term) ||
+      g.phone.toLowerCase().includes(term) ||
+      (g.room && g.room.toLowerCase().includes(term))
+    );
+    renderGuests(filtered);
+  });
+
+  editModal.addEventListener('click', (e) => {
+    if (e.target === editModal) closeModal();
+  });
+
+  // 🔥 Real-time listeners for auto update
+  db.collection('homestays').doc(homestayId).get().then(doc => {
+    homestayNameEl.textContent = doc.data()?.name || 'Homestay';
+  });
+
+  db.collection('guests')
+    .where('homestayId', '==', homestayId)
+    .onSnapshot(snapshot => {
+      allGuests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      occupancyEl.textContent = `Currently ${allGuests.length} guest(s) staying`;
+      renderGuests(allGuests);
+    });
+</script>
+
+</body>
+</html>
