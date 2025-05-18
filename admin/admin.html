@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
+    /* (Keep all your existing styles from before) */
     body {
       font-family: 'Poppins', sans-serif;
       margin: 0;
@@ -14,32 +15,23 @@
       position: relative;
       min-height: 100vh;
     }
-
-    /* Logout button styling */
     #logoutBtn {
       width: 100%;
-    padding: 12px;
-    background-color: #0044cc;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
+      padding: 12px;
+      background-color: #0044cc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
     }
-
-    #logoutBtn:hover {
-      background-color: #c0392b;
-    }
-
-    /* Push the heading down so it's not overlapped by the fixed logout button */
+    #logoutBtn:hover { background-color: #c0392b; }
     h1 {
       text-align: center;
       margin-bottom: 30px;
-      margin-top: 70px; /* space for fixed button */
+      margin-top: 70px;
       color: #34495e;
     }
-
-    /* Container for cards */
     #cardsContainer {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -48,8 +40,6 @@
       margin: 0 auto;
       padding-top: 10px;
     }
-
-    /* Individual card styling */
     .homestay-card {
       background: white;
       border-radius: 10px;
@@ -59,23 +49,20 @@
       flex-direction: column;
       gap: 12px;
       transition: box-shadow 0.3s ease;
+      word-break: break-word;
     }
-
     .homestay-card:hover {
       box-shadow: 0 4px 14px rgba(0,0,0,0.15);
     }
-
     .homestay-field {
       font-size: 1rem;
       color: #2c3e50;
     }
-
     .homestay-label {
       font-weight: 600;
       margin-right: 6px;
       color: #34495e;
     }
-
     .status {
       display: inline-block;
       padding: 4px 10px;
@@ -84,29 +71,13 @@
       color: white;
       user-select: none;
     }
-
-    .subscribed-status {
-      background-color: #2ecc71;
-    }
-
-    .not-subscribed-status {
-      background-color: #e67e22;
-    }
-
-    .blocked-status {
-      background-color: #e74c3c;
-    }
-
-    .not-blocked-status {
-      background-color: #95a5a6;
-    }
-
+    .blocked-status { background-color: #e74c3c; }
+    .not-blocked-status { background-color: #95a5a6; }
     .button-group {
       margin-top: 12px;
       display: flex;
       gap: 12px;
     }
-
     button {
       flex: 1;
       padding: 10px 0;
@@ -119,28 +90,8 @@
       color: white;
       user-select: none;
     }
-
-    button.subscribe-btn {
-      background-color: #2ecc71;
-    }
-    button.subscribe-btn:hover {
-      background-color: #27ae60;
-    }
-
-    button.unsubscribe-btn {
-      background-color: #e67e22;
-    }
-    button.unsubscribe-btn:hover {
-      background-color: #d35400;
-    }
-
-    button.block-btn {
-      background-color: #e74c3c;
-    }
-    button.block-btn:hover {
-      background-color: #c0392b;
-    }
-
+    button.block-btn { background-color: #e74c3c; }
+    button.block-btn:hover { background-color: #c0392b; }
     button.unblock-btn {
       background-color: #65ff65;
       color: #2c3e50;
@@ -148,12 +99,8 @@
     button.unblock-btn:hover {
       background-color: #66d666;
     }
-
-    /* Responsive adjustments */
     @media (max-width: 400px) {
-      .button-group {
-        flex-direction: column;
-      }
+      .button-group { flex-direction: column; }
     }
   </style>
 </head>
@@ -166,28 +113,59 @@
     <!-- Cards will be injected here -->
   </div>
 
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <!-- Your Firebase config script -->
   <script src="/js/firebase-config.js"></script>
 
   <script>
     const cardsContainer = document.getElementById('cardsContainer');
+
+    // Helper to parse Firestore date string like "18 May 2025 at 10:23 pm"
+    function parseFirestoreDate(str) {
+      // Replace ' at ' with space and parse
+      // For example: "18 May 2025 at 10:23 pm" -> "18 May 2025 10:23 pm"
+      const normalized = str.replace(' at ', ' ');
+      const date = new Date(normalized);
+      return isNaN(date.getTime()) ? null : date;
+    }
+
+    // Check if plan expired and block if necessary
+    async function checkAndBlockIfExpired(id, data) {
+      if (!data.planExpires) return;
+
+      const expiryDate = parseFirestoreDate(data.planExpires);
+      if (!expiryDate) return;
+
+      const now = new Date();
+
+      // If expiry date passed and user not blocked, block them automatically
+      if (now > expiryDate && !data.blocked) {
+        try {
+          await db.collection('homestays').doc(id).update({ blocked: true });
+          data.blocked = true; // update local data to reflect block status
+        } catch (err) {
+          console.error(`Failed to auto-block ${id}: `, err);
+        }
+      }
+    }
 
     function createCard(id, data) {
       const card = document.createElement('div');
       card.classList.add('homestay-card');
 
       card.innerHTML = `
-        <div class="homestay-field"><span class="homestay-label">Name:</span> ${data.name}</div>
-        <div class="homestay-field"><span class="homestay-label">Username:</span> ${data.username}</div>
-        <div class="homestay-field"><span class="homestay-label">Phone:</span> +91 ${data.phone || 'N/A'}</div>
-        <div class="homestay-field"><span class="homestay-label">Total Rooms:</span> ${data.totalRooms}</div>
-        <div class="homestay-field">
-          <span class="homestay-label">Subscribed:</span>
-          <span class="status ${data.subscribed ? 'subscribed-status' : 'not-subscribed-status'}">
-            ${data.subscribed ? 'Yes' : 'No'}
-          </span>
-        </div>
+        <div class="homestay-field"><span class="homestay-label">Name:</span> ${data.name || 'N/A'}</div>
+        <div class="homestay-field"><span class="homestay-label">Username:</span> ${data.username || 'N/A'}</div>
+        <div class="homestay-field"><span class="homestay-label">Password:</span> ${data.password || 'N/A'}</div>
+        <div class="homestay-field"><span class="homestay-label">Phone:</span> ${data.phone || 'N/A'}</div>
+        <div class="homestay-field"><span class="homestay-label">Total Rooms:</span> ${data.totalRooms || 0}</div>
+        <div class="homestay-field"><span class="homestay-label">Transaction ID:</span> ${data.transactionId || 'N/A'}</div>
+        <div class="homestay-field"><span class="homestay-label">Plan Amount:</span> ₹${data.planAmount || 0}</div>
+        <div class="homestay-field"><span class="homestay-label">Plan Duration (Months):</span> ${data.planDurationMonths || 0}</div>
+        <div class="homestay-field"><span class="homestay-label">Account Created:</span> ${data.accountCreated || 'N/A'}</div>
+        <div class="homestay-field"><span class="homestay-label">Plan Expires:</span> ${data.planExpires || 'N/A'}</div>
         <div class="homestay-field">
           <span class="homestay-label">Blocked:</span>
           <span class="status ${data.blocked ? 'blocked-status' : 'not-blocked-status'}">
@@ -195,12 +173,6 @@
           </span>
         </div>
         <div class="button-group">
-          <button
-            class="${data.subscribed ? 'unsubscribe-btn' : 'subscribe-btn'}"
-            onclick="toggleSubscribe('${id}', ${data.subscribed})"
-          >
-            ${data.subscribed ? 'Unsubscribe' : 'Subscribe'}
-          </button>
           <button
             class="${data.blocked ? 'unblock-btn' : 'block-btn'}"
             onclick="toggleBlock('${id}', ${data.blocked})"
@@ -212,14 +184,6 @@
       return card;
     }
 
-    async function toggleSubscribe(id, currentStatus) {
-      try {
-        await db.collection('homestays').doc(id).update({ subscribed: !currentStatus });
-      } catch (err) {
-        alert('Error updating subscription status: ' + err.message);
-      }
-    }
-
     async function toggleBlock(id, currentStatus) {
       try {
         await db.collection('homestays').doc(id).update({ blocked: !currentStatus });
@@ -228,29 +192,40 @@
       }
     }
 
-    function loadHomestays() {
-      db.collection('homestays').onSnapshot(snapshot => {
+    async function loadHomestays() {
+      db.collection('homestays').onSnapshot(async snapshot => {
         cardsContainer.innerHTML = '';
-        snapshot.forEach(doc => {
+        // Using Promise.all so that all auto-block checks complete before rendering
+        const cards = await Promise.all(snapshot.docs.map(async doc => {
           const data = doc.data();
-          const card = createCard(doc.id, {
+
+          // Auto block if expired
+          await checkAndBlockIfExpired(doc.id, data);
+
+          return createCard(doc.id, {
             name: data.name,
             username: data.username,
-            phone: data.phone || '',
+            password: data.password,
+            phone: data.phone,
             totalRooms: data.totalRooms,
-            subscribed: data.subscribed ?? false,
+            transactionId: data.transactionId,
+            planAmount: data.planAmount,
+            planDurationMonths: data.planDurationMonths,
+            accountCreated: data.accountCreated,
+            planExpires: data.planExpires,
             blocked: data.blocked ?? false,
           });
-          cardsContainer.appendChild(card);
-        });
+        }));
+
+        cards.forEach(card => cardsContainer.appendChild(card));
       }, err => {
-        cardsContainer.innerHTML = '<p style="text-align:center; color:red;">Error loading homestays: ' + err.message + '</p>';
+        cardsContainer.innerHTML = `<p style="text-align:center; color:red;">Error loading homestays: ${err.message}</p>`;
       });
     }
 
     function logout() {
-      // Clear any session or auth tokens here if needed
-      window.location.href = '/index.html'; // Redirect to root index.html
+      // Clear session or auth tokens here if needed
+      window.location.href = '/index.html'; // Redirect to your login or home page
     }
 
     loadHomestays();
