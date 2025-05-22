@@ -256,8 +256,11 @@
       </div>
 
       <div class="progress-bar">
-        <div class="progress-bar-inner" id="progressInner"></div>
+        <div class="progress-bar-inner" id="progressInner"></div>      
       </div>
+      <p id="txnReminder" style="text-align: center; color: #888; margin-top: 15px;">
+        Please enter your Transaction ID after payment.
+      </p>  
     </div>
 
     <div class="thank-you-card" id="thankYouCard">
@@ -363,7 +366,7 @@
         e.preventDefault();
 
         // Construct UPI URL (update pa= and pn= with your real UPI ID and payee name)
-        const upiURL = `upi://pay?pa=yourupi@bank&pn=YourBusinessName&am=${selectedAmount}&cu=INR&tn=Subscription%20Renewal`;
+        const upiURL = `upi://pay?pa=9449991672@ibl&pn=Tiny Rooms&am=${selectedAmount}&cu=INR&tn=Subscription%20Renewal`;
         upiLink.href = upiURL;
 
         // Clear previous QR code if any
