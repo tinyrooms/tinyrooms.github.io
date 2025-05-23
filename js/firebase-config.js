@@ -1,14 +1,12 @@
 // firebase-config.js
 const firebaseConfig = {
-  apiKey: "AIzaSyCRlRwkZrXwIY6b7MgXJe-gvt-tS5-VnjA",
-  authDomain: "clean-up-india.firebaseapp.com",
-  databaseURL:
-    "https://clean-up-india-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "clean-up-india",
-  storageBucket: "clean-up-india.firebasestorage.app",
-  messagingSenderId: "38976459666",
-  appId: "1:38976459666:web:ef0c96c351fb5c4b2e274b",
-  measurementId: "G-WJZC0WXY2F",
+  apiKey: "AIzaSyDJ8sLIFTNVTG19bTS_ceaCFFvFjfjWcs0",
+  authDomain: "tinyrooms-66761.firebaseapp.com",
+  projectId: "tinyrooms-66761",
+  storageBucket: "tinyrooms-66761.firebasestorage.app",
+  messagingSenderId: "360096531553",
+  appId: "1:360096531553:web:22298f4bd619681bda1620",
+  measurementId: "G-936FJ0KH6M",
 };
 
 firebase.initializeApp(firebaseConfig);
