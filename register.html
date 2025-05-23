@@ -230,9 +230,12 @@
       <div class="progress-bar">
         <div class="progress-bar-inner" id="progressInner"></div>
       </div>
-      <p id="txnReminder" style="text-align: center; color: #888; margin-top: 15px;">
+      <p
+        id="txnReminder"
+        style="text-align: center; color: #888; margin-top: 15px"
+      >
         Please enter your Transaction ID after payment.
-      </p> 
+      </p>
     </div>
 
     <div class="thank-you-card" id="thankYouCard">
@@ -246,7 +249,12 @@
     <footer>
       <p>
         &copy; 2025 tinyrooms. All
-        <a style="text-decoration: none; color: #2c3e50;" href="/admin/adminlogin.html">rights</a> reserved.
+        <a
+          style="text-decoration: none; color: #2c3e50"
+          href="/admin/adminlogin.html"
+          >rights</a
+        >
+        reserved.
       </p>
       <div class="footer-links">
         <a href="privacy.html">Privacy Policy</a> |
@@ -256,8 +264,28 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="/js/firebase-config.js"></script>
+    <script src="/js/spinner.js"></script>
     <script>
+      // Disable right-click context menu gently
+      document.addEventListener("contextmenu", function (e) {
+        e.preventDefault();
+      });
+
+      // Optional: Disable common shortcuts for opening dev tools (F12, Ctrl+Shift+I)
+      document.addEventListener("keydown", function (e) {
+        // F12
+        if (e.key === "F12") {
+          e.preventDefault();
+        }
+        // Ctrl+Shift+I or Ctrl+Shift+C or Ctrl+Shift+J
+        if (
+          e.ctrlKey &&
+          e.shiftKey &&
+          ["I", "C", "J"].includes(e.key.toUpperCase())
+        ) {
+          e.preventDefault();
+        }
+      });
       const form = document.getElementById("registerForm");
       const progressSection = document.getElementById("progressSection");
       const progressInner = document.getElementById("progressInner");
@@ -339,34 +367,33 @@
           progressSection.style.display = "none";
           thankYouCard.style.display = "block";
 
-          await db.collection('homestays').add({
-  name,
-  username,
-  password,
-  phone,
-  totalRooms,
-  transactionId: txnId,
-  planAmount: amount,
-  planDurationMonths: months,
-  accountCreated: createdAt.toLocaleString("en-IN", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  }),
-  planExpires: expiryDate.toLocaleString("en-IN", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  }),
-  blocked: true
-});
-
+          await db.collection("homestays").add({
+            name,
+            username,
+            password,
+            phone,
+            totalRooms,
+            transactionId: txnId,
+            planAmount: amount,
+            planDurationMonths: months,
+            accountCreated: createdAt.toLocaleString("en-IN", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            }),
+            planExpires: expiryDate.toLocaleString("en-IN", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            }),
+            blocked: true,
+          });
         } catch (err) {
           console.error(err);
           messageDiv.textContent = "Something went wrong. Try again.";

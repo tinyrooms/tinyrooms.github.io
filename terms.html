@@ -136,5 +136,29 @@
     </p>
 
     <a href="index.html" class="back-btn">← Back to Home</a>
+  
+<script>
+      // Disable right-click context menu gently
+      document.addEventListener("contextmenu", function (e) {
+        e.preventDefault();
+      });
+
+      // Optional: Disable common shortcuts for opening dev tools (F12, Ctrl+Shift+I)
+      document.addEventListener("keydown", function (e) {
+        // F12
+        if (e.key === "F12") {
+          e.preventDefault();
+        }
+        // Ctrl+Shift+I or Ctrl+Shift+C or Ctrl+Shift+J
+        if (
+          e.ctrlKey &&
+          e.shiftKey &&
+          ["I", "C", "J"].includes(e.key.toUpperCase())
+        ) {
+          e.preventDefault();
+        }
+      });
+    </script>  
+
   </body>
 </html>

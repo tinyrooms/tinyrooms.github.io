@@ -1,317 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Homestay Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Homestay Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
 
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: #f0f4f8;
-      color: #333;
-      padding: 20px;
-    }
+      body {
+        margin: 0;
+        font-family: "Poppins", sans-serif;
+        background: #f0f4f8;
+        color: #333;
+        padding: 20px;
+      }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
 
-    header h1 {
-      font-size: 1.8rem;
-      color: #2c3e50;
-    }
+      header h1 {
+        font-size: 1.8rem;
+        color: #2c3e50;
+      }
 
-    .buttons button {
-      margin-left: 10px;
-      padding: 10px 16px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 8px;
-      background: #3498db;
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
+      .buttons button {
+        margin-left: 10px;
+        padding: 10px 16px;
+        font-size: 1rem;
+        border: none;
+        border-radius: 8px;
+        background: #3498db;
+        color: white;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
 
-    .buttons button:hover {
-      background: #2980b9;
-    }
+      .buttons button:hover {
+        background: #2980b9;
+      }
 
-    section h2 {
-      margin-top: 30px;
-      font-size: 1.4rem;
-      color: #2c3e50;
-    }
+      section h2 {
+        margin-top: 30px;
+        font-size: 1.4rem;
+        color: #2c3e50;
+      }
 
-    #occupancy {
-      font-weight: 600;
-      margin: 10px 0 20px;
-    }
+      #occupancy {
+        font-weight: 600;
+        margin: 10px 0 20px;
+      }
 
-    #searchInput {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 20px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
+      #searchInput {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        font-size: 1rem;
+      }
 
-    .cards-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-    }
+      .cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+      }
 
-    .guest-card {
-      background: #fff;
-      padding: 16px;
-      border-radius: 15px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      transition: transform 0.2s ease;
-    }
+      .guest-card {
+        background: #fff;
+        padding: 16px;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        transition: transform 0.2s ease;
+      }
 
-    .guest-card:hover {
-      transform: translateY(-4px);
-    }
+      .guest-card:hover {
+        transform: translateY(-4px);
+      }
 
-    .guest-card h3 {
-      margin: 0 0 5px;
-      font-size: 1.2rem;
-      color: #34495e;
-    }
+      .guest-card h3 {
+        margin: 0 0 5px;
+        font-size: 1.2rem;
+        color: #34495e;
+      }
 
-    .guest-card p {
-      margin: 4px 0;
-      font-size: 0.95rem;
-    }
+      .guest-card p {
+        margin: 4px 0;
+        font-size: 0.95rem;
+      }
 
-    .guest-card .actions {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-    }
+      .guest-card .actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+      }
 
-    .guest-card .actions button {
-      flex: 1;
-      padding: 8px 12px;
-      border: none;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
+      .guest-card .actions button {
+        flex: 1;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
 
-    .guest-card .actions button:first-child {
-      background-color: #27ae60;
-      color: white;
-    }
+      .guest-card .actions button:first-child {
+        background-color: #27ae60;
+        color: white;
+      }
 
-    .guest-card .actions button.delete {
-      background-color: #e74c3c;
-      color: white;
-    }
+      .guest-card .actions button.delete {
+        background-color: #e74c3c;
+        color: white;
+      }
 
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
+      .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
 
-    .modal-content {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      max-width: 600px;
-      width: 100%;
-      overflow-y: auto;
-      max-height: 90vh;
-    }
+      .modal-content {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        max-width: 600px;
+        width: 100%;
+        overflow-y: auto;
+        max-height: 90vh;
+      }
 
-    .modal-content h2 {
-      margin-top: 0;
-      font-size: 1.5rem;
-      color: #2c3e50;
-    }
+      .modal-content h2 {
+        margin-top: 0;
+        font-size: 1.5rem;
+        color: #2c3e50;
+      }
 
-    .modal-content label {
-      display: block;
-      margin: 12px 0 5px;
-      font-weight: 600;
-    }
+      .modal-content label {
+        display: block;
+        margin: 12px 0 5px;
+        font-weight: 600;
+      }
 
-    .modal-content input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
+      .modal-content input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+      }
 
-    .order-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
+      .order-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
 
-    .order-row input {
-      flex: 1;
-    }
+      .order-row input {
+        flex: 1;
+      }
 
-    .order-row button {
-      background-color: #e74c3c;
-      color: white;
-      border: none;
-      padding: 8px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+      .order-row button {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        padding: 8px;
+        border-radius: 6px;
+        cursor: pointer;
+      }
 
-    #addOrderBtn, #calculateBillBtn {
-      margin-top: 10px;
-      padding: 10px;
-      background: #2980b9;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+      #addOrderBtn,
+      #calculateBillBtn {
+        margin-top: 10px;
+        padding: 10px;
+        background: #2980b9;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
 
-    #saveGuestBtn, #cancelBtn {
-      margin-top: 20px;
-      padding: 12px 20px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-    }
+      #saveGuestBtn,
+      #cancelBtn {
+        margin-top: 20px;
+        padding: 12px 20px;
+        font-size: 1rem;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+      }
 
-    #saveGuestBtn {
-      background: #2ecc71;
-      color: white;
-      margin-right: 10px;
-    }
+      #saveGuestBtn {
+        background: #2ecc71;
+        color: white;
+        margin-right: 10px;
+      }
 
-    #saveGuestBtn:hover {
-      background: #27ae60;
-    }
+      #saveGuestBtn:hover {
+        background: #27ae60;
+      }
 
-    #cancelBtn {
-      background: #bdc3c7;
-      color: #2c3e50;
-    }
+      #cancelBtn {
+        background: #bdc3c7;
+        color: #2c3e50;
+      }
 
-    #cancelBtn:hover {
-      background: #95a5a6;
-    }
-    footer {
-      text-align: center;
-      padding: 20px;
-      background: #eee;
-      margin-top: 40px;
-    }
-  </style>
-</head>
-<body>
+      #cancelBtn:hover {
+        background: #95a5a6;
+      }
+      footer {
+        text-align: center;
+        padding: 20px;
+        background: #eee;
+        margin-top: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1 id="homestayName">Homestay</h1>
+      <div class="buttons">
+        <button id="addGuestBtn">Add Guest</button>
+        <button id="logoutBtn">Logout</button>
+      </div>
+    </header>
 
-<header>
-  <h1 id="homestayName">Homestay</h1>
-  <div class="buttons">
-    <button id="addGuestBtn">Add Guest</button>
-    <button id="logoutBtn">Logout</button>
-  </div>
-</header>
+    <section>
+      <h2>Current Occupancy</h2>
+      <div id="occupancy">Loading...</div>
+    </section>
 
-<section>
-  <h2>Current Occupancy</h2>
-  <div id="occupancy">Loading...</div>
-</section>
+    <section>
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search guests by name, phone, or room..."
+      />
+      <h2>Guests</h2>
+      <div class="cards-container" id="guestsCardsContainer">
+        Loading guests...
+      </div>
+    </section>
 
-<section>
-  <input type="text" id="searchInput" placeholder="Search guests by name, phone, or room...">
-  <h2>Guests</h2>
-  <div class="cards-container" id="guestsCardsContainer">Loading guests...</div>
-</section>
+    <div class="modal" id="editModal">
+      <div class="modal-content">
+        <h2>Edit Guest</h2>
+        <label>Name: <input type="text" id="editName" /></label>
+        <label>Phone: <input type="text" id="editPhone" /></label>
+        <label>Age: <input type="number" id="editAge" /></label>
+        <label>Room No: <input type="text" id="editRoom" /></label>
+        <label
+          >Check-in: <input type="datetime-local" id="editCheckin"
+        /></label>
+        <label
+          >Check-out: <input type="datetime-local" id="editCheckout"
+        /></label>
+        <label
+          >Price per Night: <input type="number" id="editPricePerNight"
+        /></label>
+        <h3>Orders</h3>
+        <div id="ordersContainer"></div>
+        <button id="addOrderBtn">+ Add Order</button>
+        <h3>Total</h3>
+        <button id="calculateBillBtn">Calculate Total Bill</button>
+        <p id="totalBill"></p>
+        <button id="saveGuestBtn">Save</button>
+        <button id="cancelBtn" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
 
-<div class="modal" id="editModal">
-  <div class="modal-content">
-    <h2>Edit Guest</h2>
-    <label>Name: <input type="text" id="editName"></label>
-    <label>Phone: <input type="text" id="editPhone"></label>
-    <label>Age: <input type="number" id="editAge"></label>
-    <label>Room No: <input type="text" id="editRoom"></label>
-    <label>Check-in: <input type="datetime-local" id="editCheckin"></label>
-    <label>Check-out: <input type="datetime-local" id="editCheckout"></label>
-    <label>Price per Night: <input type="number" id="editPricePerNight"></label>
-    <h3>Orders</h3>
-    <div id="ordersContainer"></div>
-    <button id="addOrderBtn">+ Add Order</button>
-    <h3>Total</h3>
-    <button id="calculateBillBtn">Calculate Total Bill</button>
-    <p id="totalBill"></p>
-    <button id="saveGuestBtn">Save</button>
-    <button id="cancelBtn" onclick="closeModal()">Cancel</button>
-  </div>
-</div>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="/js/spinner.js"></script>
+    <script src="/js/dashboard.js"></script>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="/js/firebase-config.js"></script>
-<script src="/js/dashboard.js"></script>
+    <footer>
+      <div class="footer-content">
+        <p>&copy; 2025 tinyrooms. All rights reserved.</p>
+        <nav class="footer-links">
+          <a href="privacy.html">Privacy Policy</a> |
+          <a href="terms.html">Terms & Conditions</a>
+        </nav>
+      </div>
+    </footer>
 
-<footer>
-  <div class="footer-content">
-    <p>&copy; 2025 tinyrooms. All rights reserved.</p>
-    <nav class="footer-links">
-      <a href="privacy.html">Privacy Policy</a> | <a href="terms.html">Terms & Conditions</a>
-    </nav>
-  </div>
-</footer>
+    <script>
+      // Disable right-click context menu gently
+      document.addEventListener("contextmenu", function (e) {
+        e.preventDefault();
+      });
 
-<style>
-  footer {
-    background-color: #f5f7fa;
-    color: #2c3e50;
-    padding: 20px 15px;
-    text-align: center;
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.9rem;
-    margin-top: 40px;
-  }
+      // Optional: Disable common shortcuts for opening dev tools (F12, Ctrl+Shift+I)
+      document.addEventListener("keydown", function (e) {
+        // F12
+        if (e.key === "F12") {
+          e.preventDefault();
+        }
+        // Ctrl+Shift+I or Ctrl+Shift+C or Ctrl+Shift+J
+        if (
+          e.ctrlKey &&
+          e.shiftKey &&
+          ["I", "C", "J"].includes(e.key.toUpperCase())
+        ) {
+          e.preventDefault();
+        }
+      });
+    </script>
+    <style>
+      footer {
+        background-color: #f5f7fa;
+        color: #2c3e50;
+        padding: 20px 15px;
+        text-align: center;
+        font-family: "Poppins", sans-serif;
+        font-size: 0.9rem;
+        margin-top: 40px;
+      }
 
-  .footer-content {
-    max-width: 900px;
-    margin: 0 auto;
-  }
+      .footer-content {
+        max-width: 900px;
+        margin: 0 auto;
+      }
 
-  .footer-links {
-    margin-top: 8px;
-  }
+      .footer-links {
+        margin-top: 8px;
+      }
 
-  .footer-links a {
-    color: #3498db;
-    margin: 0 12px;
-    text-decoration: none;
-    font-weight: 600;
-  }
+      .footer-links a {
+        color: #3498db;
+        margin: 0 12px;
+        text-decoration: none;
+        font-weight: 600;
+      }
 
-  .footer-links a:hover {
-    text-decoration: underline;
-  }
-</style>
-
-</body>
+      .footer-links a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </body>
 </html>

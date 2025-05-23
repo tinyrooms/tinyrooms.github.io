@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="/js/firebase-config.js"></script>
+    <script src="/js/spinner.js"></script>
     <!-- Your Firebase config -->
     <style>
       *,
@@ -256,16 +256,20 @@
       </div>
 
       <div class="progress-bar">
-        <div class="progress-bar-inner" id="progressInner"></div>      
+        <div class="progress-bar-inner" id="progressInner"></div>
       </div>
-      <p id="txnReminder" style="text-align: center; color: #888; margin-top: 15px;">
+      <p
+        id="txnReminder"
+        style="text-align: center; color: #888; margin-top: 15px"
+      >
         Please enter your Transaction ID after payment.
-      </p>  
+      </p>
     </div>
 
     <div class="thank-you-card" id="thankYouCard">
       <h2>🎉 Thank you!</h2>
-      <p>Your payment was successful and has been updated.
+      <p>
+        Your payment was successful and has been updated.
         <br />
         It might take a few minutes to verify your transaction.
       </p>
@@ -280,6 +284,26 @@
     </footer>
 
     <script>
+      // Disable right-click context menu gently
+      document.addEventListener("contextmenu", function (e) {
+        e.preventDefault();
+      });
+
+      // Optional: Disable common shortcuts for opening dev tools (F12, Ctrl+Shift+I)
+      document.addEventListener("keydown", function (e) {
+        // F12
+        if (e.key === "F12") {
+          e.preventDefault();
+        }
+        // Ctrl+Shift+I or Ctrl+Shift+C or Ctrl+Shift+J
+        if (
+          e.ctrlKey &&
+          e.shiftKey &&
+          ["I", "C", "J"].includes(e.key.toUpperCase())
+        ) {
+          e.preventDefault();
+        }
+      });
       const loginForm = document.getElementById("loginForm");
       const details = document.getElementById("details");
       const paymentForm = document.getElementById("paymentForm");
