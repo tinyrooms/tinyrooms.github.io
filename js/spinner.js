@@ -1,13 +1,19 @@
-// firebase-config.js
-const firebaseConfig = {
-  apiKey: "AIzaSyDJ8sLIFTNVTG19bTS_ceaCFFvFjfjWcs0",
-  authDomain: "tinyrooms-66761.firebaseapp.com",
-  projectId: "tinyrooms-66761",
-  storageBucket: "tinyrooms-66761.firebasestorage.app",
-  messagingSenderId: "360096531553",
-  appId: "1:360096531553:web:22298f4bd619681bda1620",
-  measurementId: "G-936FJ0KH6M",
-};
+async function initFirebase() {
+  try {
+    const response = await fetch(
+      "https://firebase-config-server-cg75.onrender.com/api/firebase-config"
+    );
+    const firebaseConfig = await response.json();
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // You can now use `db` or export it if needed
+    window.db = db;
+    console.log("Firebase initialized successfully.");
+  } catch (error) {
+    console.error("Failed to initialize Firebase:", error);
+  }
+}
+
+initFirebase();

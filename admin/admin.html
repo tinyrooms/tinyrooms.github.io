@@ -292,7 +292,16 @@
         window.location.href = "/index.html"; // Redirect to your login or home page
       }
 
+        // Wait until db is defined, then call loadHomestays
+  function waitForDBAndLoad() {
+    if (window.db) {
       loadHomestays();
+    } else {
+      setTimeout(waitForDBAndLoad, 100); // Retry every 100ms
+    }
+  }
+
+  waitForDBAndLoad();
     </script>
   </body>
 </html>
