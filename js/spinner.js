@@ -1,6 +1,6 @@
 // firebase-config.js
 
-function fetchFirebaseConfigSync(url) {
+/*function fetchFirebaseConfigSync(url) {
   const xhr = new XMLHttpRequest();
   xhr.open("GET", url, false); // false = synchronous request
   xhr.send(null);
@@ -16,9 +16,9 @@ const firebaseConfig = fetchFirebaseConfigSync(
 );
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db = firebase.firestore();*/
 
-/*
+
 // firebase-config.js
 const firebaseConfig = {
   apiKey: "AIzaSyDJ8sLIFTNVTG19bTS_ceaCFFvFjfjWcs0",
@@ -32,4 +32,3 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-*/
