@@ -1,8 +1,11 @@
-// Make sure firebase and firestore are already loaded on the page
+// Firebase setup assumed
 const homestayId = localStorage.getItem("homestayId");
 const homestayNameEl = document.getElementById("homestayName");
 const occupancyEl = document.getElementById("occupancy");
 const guestsCardsContainer = document.getElementById("guestsCardsContainer");
+const previousGuestsContainer = document.getElementById(
+  "previousGuestsContainer"
+);
 const searchInput = document.getElementById("searchInput");
 const editModal = document.getElementById("editModal");
 const editName = document.getElementById("editName");
@@ -14,85 +17,43 @@ const editCheckout = document.getElementById("editCheckout");
 const editPricePerNight = document.getElementById("editPricePerNight");
 const ordersContainer = document.getElementById("ordersContainer");
 const totalBillEl = document.getElementById("totalBill");
+const checkoutBtn = document.getElementById("checkoutBtn");
 
 let currentGuestId = null;
 let allGuests = [];
 
 // Redirect if not logged in
 if (!homestayId) {
-  alert("Not logged in. Redirecting to login page...");
+  alert("Not logged in. Redirecting...");
   window.location.href = "index.html";
 }
 
-// Check if homestay is blocked every 10 seconds
+// Blocked status check
 async function checkBlockedStatus() {
-  if (!homestayId) return;
-  try {
-    const doc = await db.collection("homestays").doc(homestayId).get();
-    if (!doc.exists) {
-      alert("Homestay not found. Logging out...");
-      localStorage.clear();
-      window.location.href = "index.html";
-      return;
-    }
-    const data = doc.data();
-    if (data.blocked) {
-      alert("Your account has been blocked by admin. You will be logged out.");
-      localStorage.clear();
-      window.location.href = "index.html";
-    }
-  } catch (err) {
-    console.error("Error checking block status:", err);
+  const doc = await db.collection("homestays").doc(homestayId).get();
+  if (!doc.exists || doc.data().blocked) {
+    alert("You are blocked. Logging out...");
+    localStorage.clear();
+    window.location.href = "index.html";
   }
 }
-// Initial check + periodic re-check
 checkBlockedStatus();
 setInterval(checkBlockedStatus, 10000);
 
-// Logout button
+// Button events
 document.getElementById("logoutBtn").onclick = () => {
   localStorage.clear();
   window.location.href = "index.html";
 };
-
-// Add guest button redirects to checkin.html
 document.getElementById("addGuestBtn").onclick = () => {
   window.location.href = "checkin.html";
 };
-
-// Add order button in modal
 document.getElementById("addOrderBtn").onclick = () => addOrderRow();
-
-// Calculate bill button in modal
 document.getElementById("calculateBillBtn").onclick = calculateTotalBill;
+document.getElementById("saveGuestBtn").onclick = saveGuestData;
+checkoutBtn.onclick = checkOutGuest;
 
-// Save guest button in modal
-document.getElementById("saveGuestBtn").onclick = async () => {
-  if (!currentGuestId) return;
-
-  try {
-    const updatedData = {
-      name: editName.value.trim(),
-      phone: editPhone.value.trim(),
-      age: parseInt(editAge.value),
-      room: editRoom.value.trim(),
-      checkin: editCheckin.value,
-      checkout: editCheckout.value,
-      pricePerNight: parseFloat(editPricePerNight.value),
-      orders: Array.from(ordersContainer.children).map((row) => ({
-        item: row.querySelector(".orderItem").value.trim(),
-        qty: parseInt(row.querySelector(".orderQty").value),
-        price: parseFloat(row.querySelector(".orderPrice").value),
-      })),
-    };
-    await db.collection("guests").doc(currentGuestId).update(updatedData);
-    closeModal();
-  } catch (err) {
-    alert("Error saving guest: " + err.message);
-  }
-};
-
-// Add order row to modal orders container
+// Add order row
 function addOrderRow(order = { item: "", qty: 1, price: 0 }) {
   const row = document.createElement("div");
   row.className = "order-row";
@@ -100,44 +61,101 @@ function addOrderRow(order = { item: "", qty: 1, price: 0 }) {
     <input type="text" class="orderItem" placeholder="Item" value="${order.item}">
     <input type="number" class="orderQty" placeholder="Qty" min="1" value="${order.qty}">
     <input type="number" class="orderPrice" placeholder="Price" min="0" step="0.01" value="${order.price}">
-    <button type="button" aria-label="Remove order row">X</button>
+    <button type="button">X</button>
   `;
   row.querySelector("button").onclick = () => row.remove();
   ordersContainer.appendChild(row);
 }
 
-// Calculate total bill and display
+// Save guest edits
+async function saveGuestData() {
+  if (!currentGuestId) return;
+  const data = {
+    name: editName.value.trim(),
+    phone: editPhone.value.trim(),
+    age: parseInt(editAge.value),
+    room: editRoom.value.trim(),
+    checkin: editCheckin.value,
+    checkout: editCheckout.value,
+    pricePerNight: parseFloat(editPricePerNight.value),
+    orders: Array.from(ordersContainer.children).map((row) => ({
+      item: row.querySelector(".orderItem").value.trim(),
+      qty: parseInt(row.querySelector(".orderQty").value),
+      price: parseFloat(row.querySelector(".orderPrice").value),
+    })),
+  };
+  await db.collection("guests").doc(currentGuestId).update(data);
+  closeModal();
+}
+
+// Calculate bill + PDF
 function calculateTotalBill() {
   const checkin = new Date(editCheckin.value);
   const checkout = new Date(editCheckout.value);
-  if (isNaN(checkin) || isNaN(checkout) || checkout <= checkin) {
-    totalBillEl.textContent = "Invalid check-in/check-out dates";
-    return;
-  }
   const nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
   const price = parseFloat(editPricePerNight.value);
-  if (isNaN(price) || price < 0) {
-    totalBillEl.textContent = "Invalid price per night";
-    return;
-  }
+  const orders = Array.from(ordersContainer.children).map((row) => ({
+    item: row.querySelector(".orderItem").value.trim(),
+    qty: parseInt(row.querySelector(".orderQty").value),
+    price: parseFloat(row.querySelector(".orderPrice").value),
+  }));
   const stayCost = nights * price;
+  const ordersTotal = orders.reduce((sum, o) => sum + o.qty * o.price, 0);
+  const total = stayCost + ordersTotal;
 
-  const ordersTotal = Array.from(ordersContainer.children).reduce(
-    (sum, row) => {
-      const qty = parseInt(row.querySelector(".orderQty").value);
-      const price = parseFloat(row.querySelector(".orderPrice").value);
-      if (isNaN(qty) || isNaN(price)) return sum;
-      return sum + qty * price;
-    },
-    0
-  );
+  totalBillEl.textContent = `Total Bill: ₹${total.toFixed(2)}`;
 
-  totalBillEl.textContent = `Total Bill: ₹${(stayCost + ordersTotal).toFixed(
-    2
-  )}`;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(16);
+  doc.text("Guest Bill", 90, 10);
+  doc.setFontSize(12);
+  doc.text(`Name: ${editName.value}`, 10, 20);
+  doc.text(`Phone: ${editPhone.value}`, 10, 30);
+  doc.text(`Room: ${editRoom.value}`, 10, 40);
+  doc.text(`Check-in: ${editCheckin.value}`, 10, 50);
+  doc.text(`Check-out: ${editCheckout.value}`, 10, 60);
+  doc.text(`Nights: ${nights}`, 10, 70);
+  doc.text(`Price/Night: ₹${price}`, 10, 80);
+  doc.text(`Stay Total: ₹${stayCost.toFixed(2)}`, 10, 90);
+  doc.text("Orders:", 10, 100);
+
+  let y = 110;
+  orders.forEach((o) => {
+    doc.text(
+      `• ${o.item} x${o.qty} @ ₹${o.price} = ₹${(o.qty * o.price).toFixed(2)}`,
+      15,
+      y
+    );
+    y += 10;
+  });
+  doc.text(`Orders Total: ₹${ordersTotal.toFixed(2)}`, 10, y + 10);
+  doc.text(`Total Bill: ₹${total.toFixed(2)}`, 10, y + 20);
+  doc.save(`${editName.value}_Bill.pdf`);
 }
 
-// Open edit modal with guest data
+// Check out guest
+async function checkOutGuest() {
+  if (!currentGuestId) return;
+  const name = editName.value.trim();
+  const phone = editPhone.value.trim();
+  const checkout = editCheckout.value;
+  if (!name || !phone || !checkout) {
+    alert("Name, phone, and checkout date required.");
+    return;
+  }
+  await db.collection("previousCustomers").add({
+    name,
+    phone,
+    checkout,
+    homestayId,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+  await db.collection("guests").doc(currentGuestId).delete();
+  closeModal();
+}
+
+// Modal handling
 function openEditModal(guest) {
   currentGuestId = guest.id;
   editName.value = guest.name || "";
@@ -152,24 +170,18 @@ function openEditModal(guest) {
   totalBillEl.textContent = "";
   editModal.style.display = "flex";
 }
-
-// Close the edit modal
 function closeModal() {
   editModal.style.display = "none";
   currentGuestId = null;
 }
 
-// Delete guest confirmation and deletion
+// Guest deletion
 async function deleteGuest(id) {
   if (!confirm("Delete this guest?")) return;
-  try {
-    await db.collection("guests").doc(id).delete();
-  } catch (err) {
-    alert("Error deleting guest: " + err.message);
-  }
+  await db.collection("guests").doc(id).delete();
 }
 
-// Render guest cards on dashboard
+// Render guest cards
 function renderGuests(guests) {
   guestsCardsContainer.innerHTML = "";
   if (guests.length === 0) {
@@ -180,7 +192,6 @@ function renderGuests(guests) {
     const checkinDate = guest.checkin
       ? new Date(guest.checkin).toLocaleString()
       : "N/A";
-    const guestJson = JSON.stringify(guest).replace(/"/g, "&quot;"); // For safe inline JSON
     const card = document.createElement("div");
     card.className = "guest-card";
     card.innerHTML = `
@@ -201,7 +212,56 @@ function renderGuests(guests) {
   });
 }
 
-// Filter guests on search input
+// Render previous customers
+function renderPreviousGuests(previousGuests) {
+  previousGuestsContainer.innerHTML = "";
+  if (previousGuests.length === 0) {
+    previousGuestsContainer.textContent = "No previous guests found.";
+    return;
+  }
+  previousGuests.forEach((guest) => {
+    let checkoutDate = "N/A";
+    if (guest.checkout instanceof Object && guest.checkout.seconds) {
+      checkoutDate = new Date(
+        guest.checkout.seconds * 1000
+      ).toLocaleDateString();
+    } else if (typeof guest.checkout === "string") {
+      checkoutDate = new Date(guest.checkout).toLocaleDateString();
+    }
+    const card = document.createElement("div");
+    card.className = "guest-card previous-guest-card";
+    card.innerHTML = `
+      <h3>${guest.name || "Unnamed"}</h3>
+      <p>Phone: ${guest.phone || "N/A"}</p>
+      <p>Checkout: ${checkoutDate}</p>
+    `;
+    previousGuestsContainer.appendChild(card);
+  });
+}
+
+// Real-time listener for previous guests (no index required)
+function listenToPreviousGuests() {
+  db.collection("previousCustomers")
+    .where("homestayId", "==", homestayId)
+    .onSnapshot(
+      (snapshot) => {
+        const previousGuests = snapshot.docs
+          .map((doc) => doc.data())
+          .sort((a, b) => {
+            const timeA = a.timestamp?.seconds || 0;
+            const timeB = b.timestamp?.seconds || 0;
+            return timeB - timeA;
+          });
+        renderPreviousGuests(previousGuests);
+      },
+      (err) => {
+        console.error("Failed to load previous guests", err);
+        previousGuestsContainer.textContent = "Failed to load previous guests.";
+      }
+    );
+}
+
+// Filter by search
 searchInput.addEventListener("input", () => {
   const term = searchInput.value.toLowerCase();
   const filtered = allGuests.filter(
@@ -213,7 +273,7 @@ searchInput.addEventListener("input", () => {
   renderGuests(filtered);
 });
 
-// Close modal if clicking outside modal content
+// Close modal on outside click
 editModal.addEventListener("click", (e) => {
   if (e.target === editModal) closeModal();
 });
@@ -225,11 +285,9 @@ db.collection("homestays")
   .then((doc) => {
     homestayNameEl.textContent = doc.data()?.name || "Homestay";
   })
-  .catch((err) => {
-    console.error("Error loading homestay name:", err);
-  });
+  .catch(console.error);
 
-// Real-time guest list updates for this homestay
+// Real-time updates for current guests
 db.collection("guests")
   .where("homestayId", "==", homestayId)
   .onSnapshot((snapshot) => {
@@ -237,3 +295,6 @@ db.collection("guests")
     occupancyEl.textContent = `Currently ${allGuests.length} guest(s) staying`;
     renderGuests(allGuests);
   });
+
+// Start previous guests listener
+listenToPreviousGuests();

@@ -1,0 +1,170 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f4f4;
+}
+
+header {
+    background: #2c3e50;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+.header-actions {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+}
+
+.header-actions button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.header-actions button:first-child {
+    background: #27ae60;
+}
+
+main {
+    padding: 20px;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.guest-card {
+    background: white;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.guest-card h3 {
+    margin: 0 0 10px;
+}
+
+.actions {
+    margin-top: 10px;
+}
+
+.actions button {
+    margin-right: 10px;
+    padding: 5px 10px;
+    border: none;
+    color: white;
+    background: #2980b9;
+    cursor: pointer;
+}
+
+.actions .delete {
+    background: #c0392b;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 25px;
+    max-width: 600px;
+    width: 90%;
+    border-radius: 10px;
+    overflow-y: auto;
+    max-height: 90vh;
+}
+
+.modal-content h2,
+.modal-content h3 {
+    margin-top: 0;
+}
+
+.modal-content label {
+    display: block;
+    margin: 10px 0 5px;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+.orders-container {
+    margin-bottom: 10px;
+}
+
+.order-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.order-row input {
+    flex: 1;
+}
+
+.order-row button {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.bill-total {
+    font-weight: bold;
+    margin: 15px 0;
+}
+
+.modal-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.modal-buttons button {
+    flex: 1;
+    padding: 10px;
+    background: #3498db;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.modal-buttons button:nth-child(2) {
+    background: #27ae60;
+}
+
+.modal-buttons button:nth-child(3) {
+    background: #f39c12;
+}
+
+.modal-buttons button:last-child {
+    background: #7f8c8d;
+}

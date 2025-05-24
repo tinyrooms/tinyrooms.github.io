@@ -174,7 +174,7 @@
       document.addEventListener("contextmenu", function (e) {
         e.preventDefault();
       });
-
+    
       // Optional: Disable common shortcuts for opening dev tools (F12, Ctrl+Shift+I)
       document.addEventListener("keydown", function (e) {
         // F12
@@ -190,6 +190,7 @@
           e.preventDefault();
         }
       });
+    
       const homestayId = localStorage.getItem("homestayId");
       const messageDiv = document.getElementById("message");
       const checkinForm = document.getElementById("checkinForm");
@@ -197,27 +198,27 @@
       const addOrderBtn = document.getElementById("addOrderBtn");
       const phoneInput = document.getElementById("phone");
       const submitBtn = checkinForm.querySelector('button[type="submit"]');
-
+    
       if (!homestayId) {
         alert("Not logged in. Redirecting to login.");
         window.location.href = "index.html";
       }
-
+    
       function addOrderRow() {
         const div = document.createElement("div");
         div.classList.add("order-row");
-
+    
         const itemInput = document.createElement("input");
         itemInput.type = "text";
         itemInput.placeholder = "Item";
         itemInput.classList.add("order-item");
-
+    
         const qtyInput = document.createElement("input");
         qtyInput.type = "number";
         qtyInput.min = "1";
         qtyInput.value = "1";
         qtyInput.classList.add("order-qty");
-
+    
         const removeBtn = document.createElement("button");
         removeBtn.type = "button";
         removeBtn.textContent = "×";
@@ -226,40 +227,40 @@
         removeBtn.style.color = "white";
         removeBtn.style.borderRadius = "10px";
         removeBtn.style.padding = "0 14px";
-
+    
         removeBtn.onclick = () => {
           ordersContainer.removeChild(div);
         };
-
+    
         div.appendChild(itemInput);
         div.appendChild(qtyInput);
         div.appendChild(removeBtn);
         ordersContainer.appendChild(div);
       }
-
+    
       addOrderBtn.addEventListener("click", addOrderRow);
-
+    
       // Basic phone number validation (numbers only, length 6-15 digits)
       function isValidPhoneNumber(number) {
         const phoneRegex = /^[0-9]{6,15}$/;
         return phoneRegex.test(number);
       }
-
+    
       checkinForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         messageDiv.textContent = "";
         messageDiv.style.color = "black";
-
+    
         // Disable buttons to prevent multiple submits
         submitBtn.disabled = true;
         addOrderBtn.disabled = true;
         submitBtn.textContent = "Checking in...";
-
+    
         const name = checkinForm.name.value.trim();
         const phone = phoneInput.value.trim();
         const age = Number(checkinForm.age.value);
-        const room = checkinForm.room.value.trim();
-
+        let room = checkinForm.room.value.trim();
+    
         if (!name || !phone || !age || !room) {
           messageDiv.textContent = "Please fill all guest details.";
           messageDiv.style.color = "red";
@@ -268,7 +269,7 @@
           submitBtn.textContent = "Check In Guest";
           return;
         }
-
+    
         if (!isValidPhoneNumber(phone)) {
           messageDiv.textContent = "Invalid phone number.";
           messageDiv.style.color = "red";
@@ -277,9 +278,14 @@
           submitBtn.textContent = "Check In Guest";
           return;
         }
-
+    
+        // Add "R" prefix to room number if not already present
+        if (!room.toUpperCase().startsWith("R")) {
+          room = "R" + room;
+        }
+    
         const fullPhone = "+91" + phone;
-
+    
         const orders = [];
         const orderRows = ordersContainer.querySelectorAll(".order-row");
         for (const row of orderRows) {
@@ -289,14 +295,14 @@
             orders.push({ item, qty });
           }
         }
-
+    
         try {
           await db.collection("guests").add({
             homestayId,
             name,
             phone: fullPhone,
             age,
-            room,
+            room,  // saved with "R" prefix
             orders,
             checkin: new Date().toISOString(),
           });
@@ -305,23 +311,23 @@
           checkinForm.reset();
           ordersContainer.innerHTML = "";
           addOrderRow();
-
+    
           setTimeout(() => {
             window.location.href = "dashboard.html";
           }, 1500);
         } catch (error) {
           messageDiv.textContent = "Error checking in guest: " + error.message;
           messageDiv.style.color = "red";
-
+    
           // Re-enable buttons so user can try again
           submitBtn.disabled = false;
           addOrderBtn.disabled = false;
           submitBtn.textContent = "Check In Guest";
         }
       });
-
+    
       ordersContainer.innerHTML = "";
       addOrderRow();
-    </script>
+    </script>    
   </body>
 </html>
