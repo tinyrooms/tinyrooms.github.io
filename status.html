@@ -11,8 +11,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="./js/spinner.js"></script>
-    <!-- Your Firebase config -->
+    <script src="./js/firebase.js"></script>
+    <script src="./js/status.js"></script>
     <style>
       *,
       *::before,
@@ -90,16 +90,16 @@
       }
 
       .upi-button {
-        display: block; /* ensures it's treated as a block-level element */
+        display: block;
         background-color: #2ecc71;
         color: white;
         padding: 12px 20px;
         border-radius: 10px;
         text-decoration: none;
         font-weight: 600;
-        margin: 15px auto; /* auto centers horizontally */
+        margin: 15px auto;
         text-align: center;
-        max-width: 300px; /* optional: keeps the button from being too wide */
+        max-width: 300px;
       }
 
       .progress-bar {
@@ -188,6 +188,7 @@
         margin: 15px auto;
         display: block;
       }
+
       .progress {
         margin-top: 20px;
       }
@@ -206,6 +207,126 @@
         .upi-button {
           font-size: 1rem;
           padding: 10px 16px;
+        }
+      }
+
+      /* Loader Styles */
+      #loaderWrapper {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.85);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        display: none;
+      }
+
+      .loader {
+        width: 80px;
+        height: 50px;
+        position: relative;
+      }
+
+      .loader-text {
+        position: absolute;
+        top: 0;
+        padding: 0;
+        margin: 0;
+        color: #3498db;
+        animation: text_713 3.5s ease both infinite;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+      }
+
+      .load {
+        background-color: #2ecc71;
+        border-radius: 50px;
+        display: block;
+        height: 16px;
+        width: 16px;
+        bottom: 0;
+        position: absolute;
+        transform: translateX(64px);
+        animation: loading_713 3.5s ease both infinite;
+      }
+
+      .load::before {
+        position: absolute;
+        content: "";
+        width: 100%;
+        height: 100%;
+        background-color: #f5f7fa;
+        border-radius: inherit;
+        animation: loading2_713 3.5s ease both infinite;
+      }
+
+      @keyframes text_713 {
+        0% {
+          letter-spacing: 1px;
+          transform: translateX(0px);
+        }
+        40% {
+          letter-spacing: 2px;
+          transform: translateX(26px);
+        }
+        80% {
+          letter-spacing: 1px;
+          transform: translateX(32px);
+        }
+        90% {
+          letter-spacing: 2px;
+          transform: translateX(0px);
+        }
+        100% {
+          letter-spacing: 1px;
+          transform: translateX(0px);
+        }
+      }
+
+      @keyframes loading_713 {
+        0% {
+          width: 16px;
+          transform: translateX(0px);
+        }
+        40% {
+          width: 100%;
+          transform: translateX(0px);
+        }
+        80% {
+          width: 16px;
+          transform: translateX(64px);
+        }
+        90% {
+          width: 100%;
+          transform: translateX(0px);
+        }
+        100% {
+          width: 16px;
+          transform: translateX(0px);
+        }
+      }
+
+      @keyframes loading2_713 {
+        0% {
+          transform: translateX(0px);
+          width: 16px;
+        }
+        40% {
+          transform: translateX(0%);
+          width: 80%;
+        }
+        80% {
+          width: 100%;
+          transform: translateX(0px);
+        }
+        90% {
+          width: 80%;
+          transform: translateX(15px);
+        }
+        100% {
+          transform: translateX(0px);
+          width: 16px;
         }
       }
     </style>
@@ -241,9 +362,7 @@
 
     <div class="progress" id="progressSection" style="display: none">
       <h4>Transaction In Progress</h4>
-      <a href="#" id="upiLink" target="_blank" class="upi-button"
-        >Pay via UPI</a
-      >
+      <a href="#" id="upiLink" target="_blank" class="upi-button">Pay via UPI</a>
 
       <div id="qrCodeContainer">
         <h4>Scan to Pay</h4>
@@ -275,6 +394,13 @@
       </p>
     </div>
 
+    <div id="loaderWrapper">
+      <div class="loader">
+        <span class="loader-text">Loading</span>
+        <span class="load"></span>
+      </div>
+    </div>
+
     <footer>
       <p style="margin-top: 20px">© 2025 tinyrooms. All rights reserved.</p>
       <span class="footer-links">
@@ -284,227 +410,20 @@
     </footer>
 
     <script>
-      // Disable right-click context menu gently
-      document.addEventListener("contextmenu", function (e) {
-        e.preventDefault();
-      });
-
-      // Optional: Disable common shortcuts for opening dev tools (F12, Ctrl+Shift+I)
-      document.addEventListener("keydown", function (e) {
-        // F12
-        if (e.key === "F12") {
-          e.preventDefault();
-        }
-        // Ctrl+Shift+I or Ctrl+Shift+C or Ctrl+Shift+J
-        if (
-          e.ctrlKey &&
-          e.shiftKey &&
-          ["I", "C", "J"].includes(e.key.toUpperCase())
-        ) {
-          e.preventDefault();
-        }
-      });
-      const loginForm = document.getElementById("loginForm");
-      const details = document.getElementById("details");
-      const paymentForm = document.getElementById("paymentForm");
-      const progressSection = document.getElementById("progressSection");
-      const upiLink = document.getElementById("upiLink");
-      const qrCodeDiv = document.getElementById("qrCode");
-      const qrCodeContainer = document.getElementById("qrCodeContainer");
-      const txnInput = document.getElementById("txnInput");
-      const txnError = document.getElementById("txnError");
-      const thankYouCard = document.getElementById("thankYouCard");
-      const progressInner = document.getElementById("progressInner");
-      const planSelect = document.getElementById("plan");
-
-      let selectedAmount = 100;
-      let selectedMonths = 1;
-      let currentUserDocId = null;
-      let userData = null;
-      let progressAnimationFrame = null;
-
-      // Format date as "18 May 2025"
-      function formatDate(date) {
-        const options = { day: "numeric", month: "short", year: "numeric" };
-        return date.toLocaleDateString("en-GB", options);
+      function showLoader() {
+        document.getElementById("loaderWrapper").style.display = "flex";
       }
 
-      planSelect.addEventListener("change", (e) => {
-        const [amount, months] = e.target.value.split("|");
-        selectedAmount = parseInt(amount);
-        selectedMonths = parseInt(months);
-      });
-
-      loginForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const username = document.getElementById("username").value.trim();
-        const password = document.getElementById("password").value.trim();
-
-        try {
-          const snapshot = await db
-            .collection("homestays")
-            .where("username", "==", username)
-            .where("password", "==", password)
-            .get();
-
-          if (!snapshot.empty) {
-            const doc = snapshot.docs[0];
-            currentUserDocId = doc.id;
-            userData = doc.data();
-
-            const info =
-              `Name: ${userData.name}\n` +
-              `Username: ${userData.username}\n` +
-              `Phone: ${userData.phone || "N/A"}\n` +
-              `Total Rooms: ${userData.totalRooms || "N/A"}\n` +
-              `Transaction ID: ${userData.transactionId || "N/A"}\n` +
-              `Plan Amount: ₹${userData.planAmount || "N/A"}\n` +
-              `Plan Duration: ${
-                userData.planDurationMonths || "N/A"
-              } Months\n` +
-              `Account Created: ${userData.accountCreated || "N/A"}\n` +
-              `Plan Expires: ${userData.planExpires || "N/A"}`;
-
-            details.textContent = info;
-            details.style.display = "block";
-            paymentForm.style.display = "block";
-            thankYouCard.style.display = "none";
-            progressSection.style.display = "none";
-            qrCodeContainer.style.display = "none";
-            txnError.style.display = "none";
-            txnInput.value = "";
-            progressInner.style.width = "0%";
-          } else {
-            alert("Invalid credentials");
-            details.style.display = "none";
-            paymentForm.style.display = "none";
-          }
-        } catch (err) {
-          console.error("Error fetching data:", err);
-          alert("Error checking credentials.");
-        }
-      });
-
-      paymentForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-
-        // Construct UPI URL (update pa= and pn= with your real UPI ID and payee name)
-        const upiURL = `upi://pay?pa=9449991672@ibl&pn=Tiny Rooms&am=${selectedAmount}&cu=INR&tn=Subscription%20Renewal`;
-        upiLink.href = upiURL;
-
-        // Clear previous QR code if any
-        qrCodeDiv.innerHTML = "";
-
-        // Generate QR code
-        new QRCode(qrCodeDiv, {
-          text: upiURL,
-          width: 180,
-          height: 180,
-        });
-
-        qrCodeContainer.style.display = "flex";
-        progressSection.style.display = "block";
-        thankYouCard.style.display = "none";
-        txnInput.value = "";
-        txnError.style.display = "none";
-
-        // Start progress bar animation immediately (35 seconds)
-        startProgressAnimation(35000);
-      });
-
-      function startProgressAnimation(duration) {
-        progressInner.style.width = "0%";
-        if (progressAnimationFrame) {
-          cancelAnimationFrame(progressAnimationFrame);
-        }
-        let start = null;
-        function animate(timestamp) {
-          if (!start) start = timestamp;
-          let elapsed = timestamp - start;
-          let progressPercent = Math.min((elapsed / duration) * 100, 100);
-          progressInner.style.width = progressPercent + "%";
-
-          if (progressPercent < 100) {
-            progressAnimationFrame = requestAnimationFrame(animate);
-          }
-        }
-        progressAnimationFrame = requestAnimationFrame(animate);
+      function hideLoader() {
+        document.getElementById("loaderWrapper").style.display = "none";
       }
 
-      // Constantly watch txn input, auto update if > 10 chars
-      let updateTimeout = null;
-      txnInput.addEventListener("input", () => {
-        txnError.style.display = "none";
-        thankYouCard.style.display = "none";
+      document.getElementById("loginForm").addEventListener("submit", function (e) {
+        showLoader();
+      });
 
-        if (updateTimeout) clearTimeout(updateTimeout);
-
-        updateTimeout = setTimeout(async () => {
-          const txnId = txnInput.value.trim();
-
-          if (txnId.length <= 10) {
-            txnError.style.display = "block";
-            return;
-          }
-          txnError.style.display = "none";
-
-          if (!currentUserDocId) {
-            alert("Please login first.");
-            return;
-          }
-
-          try {
-            // Calculate new expiry date correctly:
-            let baseDate = new Date();
-            if (userData.planExpires) {
-              const oldExpiry = new Date(userData.planExpires);
-              if (oldExpiry > baseDate) baseDate = oldExpiry;
-            }
-            baseDate.setMonth(baseDate.getMonth() + selectedMonths);
-            const formattedExpiry = formatDate(baseDate);
-
-            // Update Firestore document
-            await db.collection("homestays").doc(currentUserDocId).update({
-              transactionId: txnId,
-              planAmount: selectedAmount,
-              planDurationMonths: selectedMonths,
-              planExpires: formattedExpiry,
-              subscribed: true,
-              blocked: false,
-            });
-
-            // Update local data
-            userData.transactionId = txnId;
-            userData.planAmount = selectedAmount;
-            userData.planDurationMonths = selectedMonths;
-            userData.planExpires = formattedExpiry;
-            userData.subscribed = true;
-            userData.blocked = false;
-
-            // Hide progress section and QR code & show thank you card
-            progressSection.style.display = "none";
-            qrCodeContainer.style.display = "none";
-            thankYouCard.style.display = "block";
-
-            // Update details text
-            const updatedInfo =
-              `Name: ${userData.name}\n` +
-              `Username: ${userData.username}\n` +
-              `Phone: ${userData.phone || "N/A"}\n` +
-              `Total Rooms: ${userData.totalRooms || "N/A"}\n` +
-              `Transaction ID: ${userData.transactionId}\n` +
-              `Plan Amount: ₹${userData.planAmount}\n` +
-              `Plan Duration: ${userData.planDurationMonths} Months\n` +
-              `Account Created: ${userData.accountCreated || "N/A"}\n` +
-              `Plan Expires: ${userData.planExpires}`;
-
-            details.textContent = updatedInfo;
-          } catch (error) {
-            console.error("Error updating Firestore:", error);
-            alert("Failed to update payment info.");
-          }
-        }, 500);
+      document.getElementById("paymentForm").addEventListener("submit", function (e) {
+        showLoader();
       });
     </script>
   </body>

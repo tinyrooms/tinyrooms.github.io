@@ -141,7 +141,6 @@
       #qrCodeContainer {
         margin-top: 20px;
         display: none;
-        display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
@@ -166,9 +165,136 @@
       .footer-links a:hover {
         text-decoration: underline;
       }
+
+      /* Loader Styles */
+      #loaderWrapper {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.85);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        display: none;
+      }
+
+      .loader {
+        width: 80px;
+        height: 50px;
+        position: relative;
+      }
+
+      .loader-text {
+        position: absolute;
+        top: 0;
+        padding: 0;
+        margin: 0;
+        color: #3498db;
+        animation: text_713 3.5s ease both infinite;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+      }
+
+      .load {
+        background-color: #2ecc71;
+        border-radius: 50px;
+        display: block;
+        height: 16px;
+        width: 16px;
+        bottom: 0;
+        position: absolute;
+        transform: translateX(64px);
+        animation: loading_713 3.5s ease both infinite;
+      }
+
+      .load::before {
+        position: absolute;
+        content: "";
+        width: 100%;
+        height: 100%;
+        background-color: #f5f7fa;
+        border-radius: inherit;
+        animation: loading2_713 3.5s ease both infinite;
+      }
+
+      @keyframes text_713 {
+        0% {
+          letter-spacing: 1px;
+          transform: translateX(0px);
+        }
+        40% {
+          letter-spacing: 2px;
+          transform: translateX(26px);
+        }
+        80% {
+          letter-spacing: 1px;
+          transform: translateX(32px);
+        }
+        90% {
+          letter-spacing: 2px;
+          transform: translateX(0px);
+        }
+        100% {
+          letter-spacing: 1px;
+          transform: translateX(0px);
+        }
+      }
+
+      @keyframes loading_713 {
+        0% {
+          width: 16px;
+          transform: translateX(0px);
+        }
+        40% {
+          width: 100%;
+          transform: translateX(0px);
+        }
+        80% {
+          width: 16px;
+          transform: translateX(64px);
+        }
+        90% {
+          width: 100%;
+          transform: translateX(0px);
+        }
+        100% {
+          width: 16px;
+          transform: translateX(0px);
+        }
+      }
+
+      @keyframes loading2_713 {
+        0% {
+          transform: translateX(0px);
+          width: 16px;
+        }
+        40% {
+          transform: translateX(0%);
+          width: 80%;
+        }
+        80% {
+          width: 100%;
+          transform: translateX(0px);
+        }
+        90% {
+          width: 80%;
+          transform: translateX(15px);
+        }
+        100% {
+          transform: translateX(0px);
+          width: 16px;
+        }
+      }
     </style>
   </head>
   <body>
+    <div id="loaderWrapper">
+      <div class="loader">
+        <span class="loader-text">loading</span>
+        <span class="load"></span>
+      </div>
+    </div>
+
     <button id="backBtn" onclick="window.location.href='index.html'">
       ← Back
     </button>
@@ -176,6 +302,7 @@
     <h1>Create Homestay Account</h1>
 
     <form id="registerForm">
+      <!-- Form Fields -->
       <label for="name">Full Name</label>
       <input id="name" name="name" type="text" required />
 
@@ -230,6 +357,7 @@
       <div class="progress-bar">
         <div class="progress-bar-inner" id="progressInner"></div>
       </div>
+
       <p
         id="txnReminder"
         style="text-align: center; color: #888; margin-top: 15px"
@@ -264,28 +392,8 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="/js/spinner.js"></script>
+    <script src="/js/firebase.js"></script>
     <script>
-      // Disable right-click context menu gently
-      document.addEventListener("contextmenu", function (e) {
-        e.preventDefault();
-      });
-
-      // Optional: Disable common shortcuts for opening dev tools (F12, Ctrl+Shift+I)
-      document.addEventListener("keydown", function (e) {
-        // F12
-        if (e.key === "F12") {
-          e.preventDefault();
-        }
-        // Ctrl+Shift+I or Ctrl+Shift+C or Ctrl+Shift+J
-        if (
-          e.ctrlKey &&
-          e.shiftKey &&
-          ["I", "C", "J"].includes(e.key.toUpperCase())
-        ) {
-          e.preventDefault();
-        }
-      });
       const form = document.getElementById("registerForm");
       const progressSection = document.getElementById("progressSection");
       const progressInner = document.getElementById("progressInner");
@@ -296,109 +404,110 @@
       const messageDiv = document.getElementById("messageDiv");
       const qrContainer = document.getElementById("qrCodeContainer");
       const qrCodeDiv = document.getElementById("qrCode");
+      const loaderWrapper = document.getElementById("loaderWrapper");
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const name = form.name.value.trim();
-        const username = form.username.value.trim();
-        const password = form.password.value.trim();
-        const totalRooms = Number(form.totalRooms.value);
-        const phone = "+91" + form.phone.value.trim();
-        const [amount, months] = form.plan.value.split("|").map(Number);
-        const createdAt = new Date();
-        const expiryDate = new Date();
-        expiryDate.setMonth(expiryDate.getMonth() + months);
+        loaderWrapper.style.display = "flex";
 
-        try {
-          const snapshot = await db
-            .collection("homestays")
-            .where("username", "==", username)
-            .get();
+        setTimeout(async () => {
+          // START actual processing
+          const name = form.name.value.trim();
+          const username = form.username.value.trim();
+          const password = form.password.value.trim();
+          const totalRooms = Number(form.totalRooms.value);
+          const phone = "+91" + form.phone.value.trim();
+          const [amount, months] = form.plan.value.split("|").map(Number);
+          const createdAt = new Date();
+          const expiryDate = new Date();
+          expiryDate.setMonth(expiryDate.getMonth() + months);
 
-          if (!snapshot.empty) {
-            messageDiv.textContent = "Username already exists. Choose another.";
-            messageDiv.style.display = "block";
-            return;
-          }
+          try {
+            const snapshot = await db
+              .collection("homestays")
+              .where("username", "==", username)
+              .get();
 
-          messageDiv.style.display = "none";
+            if (!snapshot.empty) {
+              loaderWrapper.style.display = "none";
+              messageDiv.textContent =
+                "Username already exists. Choose another.";
+              messageDiv.style.display = "block";
+              return;
+            }
 
-          const upiURL = `upi://pay?pa=9449991672@ibl&pn=Tiny Rooms&am=${amount}&cu=INR&tn=Subscription%20Payment%20for%20${months}%20Month(s)`;
-          upiLink.href = upiURL;
+            messageDiv.style.display = "none";
 
-          qrCodeDiv.innerHTML = "";
-          new QRCode(qrCodeDiv, {
-            text: upiURL,
-            width: 200,
-            height: 200,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H,
-          });
+            const upiURL = `upi://pay?pa=9449991672@ibl&pn=Tiny Rooms&am=${amount}&cu=INR&tn=Subscription%20Payment%20for%20${months}%20Month(s)`;
+            upiLink.href = upiURL;
 
-          qrContainer.style.display = "block";
-
-          form.style.display = "none";
-          progressSection.style.display = "block";
-
-          for (let i = 0; i <= 100; i++) {
-            await new Promise((r) => setTimeout(r, 300));
-            progressInner.style.width = i + "%";
-          }
-
-          const waitForTxn = () =>
-            new Promise((resolve) => {
-              const checkTxn = () => {
-                const txnId = txnInput.value.trim();
-                if (txnId.length >= 10) {
-                  txnError.style.display = "none";
-                  resolve(txnId);
-                } else {
-                  txnError.style.display = "block";
-                  setTimeout(checkTxn, 1000);
-                }
-              };
-              checkTxn();
+            qrCodeDiv.innerHTML = "";
+            new QRCode(qrCodeDiv, {
+              text: upiURL,
+              width: 200,
+              height: 200,
+              colorDark: "#000000",
+              colorLight: "#ffffff",
+              correctLevel: QRCode.CorrectLevel.H,
             });
 
-          const txnId = await waitForTxn();
+            // QR and UPI setup done – now hide loader
+            loaderWrapper.style.display = "none";
 
-          progressSection.style.display = "none";
-          thankYouCard.style.display = "block";
+            qrContainer.style.display = "block";
+            form.style.display = "none";
+            progressSection.style.display = "block";
 
-          await db.collection("homestays").add({
-            name,
-            username,
-            password,
-            phone,
-            totalRooms,
-            transactionId: txnId,
-            planAmount: amount,
-            planDurationMonths: months,
-            accountCreated: createdAt.toLocaleString("en-IN", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            }),
-            planExpires: expiryDate.toLocaleString("en-IN", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            }),
-            blocked: true,
-          });
-        } catch (err) {
-          console.error(err);
-          messageDiv.textContent = "Something went wrong. Try again.";
-          messageDiv.style.display = "block";
-        }
+            for (let i = 0; i <= 100; i++) {
+              await new Promise((r) => setTimeout(r, 300));
+              progressInner.style.width = i + "%";
+            }
+
+            const waitForTxn = () =>
+              new Promise((resolve) => {
+                const checkTxn = () => {
+                  const txnId = txnInput.value.trim();
+                  if (txnId.length >= 10) {
+                    txnError.style.display = "none";
+                    resolve(txnId);
+                  } else {
+                    txnError.style.display = "block";
+                    setTimeout(checkTxn, 1000);
+                  }
+                };
+                checkTxn();
+              });
+
+            const txnId = await waitForTxn();
+
+            loaderWrapper.style.display = "flex";
+            setTimeout(async () => {
+              loaderWrapper.style.display = "none";
+              progressSection.style.display = "none";
+              thankYouCard.style.display = "block";
+
+              await db.collection("homestays").add({
+                name,
+                username,
+                password,
+                phone,
+                totalRooms,
+                transactionId: txnId,
+                planAmount: amount,
+                planDurationMonths: months,
+                accountCreated: createdAt.toLocaleString("en-IN"),
+                planExpires: expiryDate.toLocaleString("en-IN"),
+                blocked: true,
+              });
+            }, 2000);
+          } catch (err) {
+            console.error(err);
+            loaderWrapper.style.display = "none";
+            messageDiv.textContent = "Something went wrong. Try again.";
+            messageDiv.style.display = "block";
+          }
+        }, 3000);
       });
     </script>
   </body>

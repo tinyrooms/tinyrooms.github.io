@@ -15,6 +15,8 @@
       color: #2c3e50;
       box-shadow: 0 0 10px rgba(0,0,0,0.05);
       border-radius: 10px;
+      position: relative;
+      min-height: 100vh;
     }
 
     h1 {
@@ -81,32 +83,106 @@
       margin-top: 40px;
     }
     .contact {
-        display: inline-block;
-        margin: 12px auto 0;
-        text-decoration: none;
-        font-weight: 600;
-        background-color: #3498db;
-        color: white;
-        padding: 12px 18px;
-        border-radius: 10px;
-      }
-      .footer-content {
-    max-width: 900px;
-    margin: 0 auto;
-  }
+      display: inline-block;
+      margin: 12px auto 0;
+      text-decoration: none;
+      font-weight: 600;
+      background-color: #3498db;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .footer-content {
+      max-width: 900px;
+      margin: 0 auto;
+    }
 
-  .footer-links {
-    margin-top: 8px;
-  }
+    .footer-links {
+      margin-top: 8px;
+    }
 
-  .footer-links a {
-    color: #3498db;
-    margin: 0 12px;
-    text-decoration: none;
-    font-weight: 600;
-  }
+    .footer-links a {
+      color: #3498db;
+      margin: 0 12px;
+      text-decoration: none;
+      font-weight: 600;
+    }
 
+    /* Loader Styles */
+    #loaderWrapper {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      display: none;
+    }
 
+    .loader {
+      width: 80px;
+      height: 50px;
+      position: relative;
+    }
+
+    .loader-text {
+      position: absolute;
+      top: 0;
+      padding: 0;
+      margin: 0;
+      color: #3498db;
+      animation: text_713 3.5s ease both infinite;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+
+    .load {
+      background-color: #2ecc71;
+      border-radius: 50px;
+      display: block;
+      height: 16px;
+      width: 16px;
+      bottom: 0;
+      position: absolute;
+      transform: translateX(64px);
+      animation: loading_713 3.5s ease both infinite;
+    }
+
+    .load::before {
+      position: absolute;
+      content: "";
+      width: 100%;
+      height: 100%;
+      background-color: #f5f7fa;
+      border-radius: inherit;
+      animation: loading2_713 3.5s ease both infinite;
+    }
+
+    @keyframes text_713 {
+      0% { letter-spacing: 1px; transform: translateX(0px); }
+      40% { letter-spacing: 2px; transform: translateX(26px); }
+      80% { letter-spacing: 1px; transform: translateX(32px); }
+      90% { letter-spacing: 2px; transform: translateX(0px); }
+      100% { letter-spacing: 1px; transform: translateX(0px); }
+    }
+
+    @keyframes loading_713 {
+      0% { width: 16px; transform: translateX(0px); }
+      40% { width: 100%; transform: translateX(0px); }
+      80% { width: 16px; transform: translateX(64px); }
+      90% { width: 100%; transform: translateX(0px); }
+      100% { width: 16px; transform: translateX(0px); }
+    }
+
+    @keyframes loading2_713 {
+      0% { transform: translateX(0px); width: 16px; }
+      40% { transform: translateX(0%); width: 80%; }
+      80% { width: 100%; transform: translateX(0px); }
+      90% { width: 80%; transform: translateX(15px); }
+      100% { transform: translateX(0px); width: 16px; }
+    }
   </style>
 </head>
 <body>
@@ -123,72 +199,75 @@
     <button type="submit">Login</button>
   </form>
 
-  <button id="registerBtn" onclick="window.location.href='register.html'">Register New Homestay</button>
-
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="/js/spinner.js"></script>
-  <script src="/js/login.js"></script>
+  <button id="registerBtn">Register New Homestay</button>
 
   <footer>
-    <a style="margin-top: 10px;" href="status.html" target="_blank" class="contact">Check Subscription Status</a>
+    <a id="checkStatus" href="status.html" target="_blank" class="contact">Check Subscription Status</a>
     <p style="margin-top: 20px;">© 2025 tinyrooms. All rights reserved.</p>
     <span class="footer-links">
       <a href="privacy.html">Privacy Policy</a> | <a href="terms.html">Terms & Conditions</a>
     </span>
   </footer>
+
+  <!-- Loader overlay -->
+  <div id="loaderWrapper">
+    <div class="loader">
+      <span class="loader-text">loading</span>
+      <span class="load"></span>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="/js/firebase.js"></script>
+  <script src="/js/login.js"></script>
+
   <script>
-
-      // Disable right-click context menu gently
-  document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-  });
-
-  // Optional: Disable common shortcuts for opening dev tools (F12, Ctrl+Shift+I)
-  document.addEventListener('keydown', function(e) {
-    // F12
-    if (e.key === 'F12') {
+    // Disable right-click context menu gently
+    document.addEventListener('contextmenu', function(e) {
       e.preventDefault();
+    });
+
+    // Optional: Disable common shortcuts for opening dev tools (F12, Ctrl+Shift+I)
+    document.addEventListener('keydown', function(e) {
+      // F12
+      if (e.key === 'F12') {
+        e.preventDefault();
+      }
+      // Ctrl+Shift+I or Ctrl+Shift+C or Ctrl+Shift+J
+      if (e.ctrlKey && e.shiftKey && ['I', 'C', 'J'].includes(e.key.toUpperCase())) {
+        e.preventDefault();
+      }
+    });
+
+    const loader = document.getElementById('loaderWrapper');
+
+    // Show loader
+    function showLoader() {
+      loader.style.display = 'flex';
     }
-    // Ctrl+Shift+I or Ctrl+Shift+C or Ctrl+Shift+J
-    if (e.ctrlKey && e.shiftKey && ['I', 'C', 'J'].includes(e.key.toUpperCase())) {
+
+    // Login form submit: show loader immediately
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      showLoader();
+    });
+
+    // Register button with delay and loader
+    document.getElementById('registerBtn').addEventListener('click', function () {
+      showLoader();
+      setTimeout(() => {
+        window.location.href = 'register.html';
+      }, 1500); // 1.5 seconds delay
+    });
+
+    // Check subscription status button with delay and loader
+    document.getElementById('checkStatus').addEventListener('click', function (e) {
       e.preventDefault();
-    }
-  });
+      showLoader();
+      setTimeout(() => {
+        window.open('status.html', '_blank');
+      }, 1500); // 1.5 seconds delay
+    });
   </script>
-
-
-<!--<style>
-  footer {
-    background-color: #f5f7fa;
-    color: #2c3e50;
-    padding: 20px 15px;
-    text-align: center;
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.9rem;
-    margin-top: 15px;
-  }
-
-  .footer-content {
-    max-width: 900px;
-    margin: 0 auto;
-  }
-
-  .footer-links {
-    margin-top: 8px;
-  }
-
-  .footer-links a {
-    color: #3498db;
-    margin: 0 12px;
-    text-decoration: none;
-    font-weight: 600;
-  }
-
-  .footer-links a:hover {
-    text-decoration: underline;
-  }
-</style>-->
-
 </body>
 </html>
