@@ -1,12 +1,20 @@
 const loginForm = document.getElementById("loginForm");
 const errorDiv = document.getElementById("error");
 
+// Auto-login if already logged in
+const storedId =
+  localStorage.getItem("homestayId") || sessionStorage.getItem("homestayId");
+if (storedId) {
+  window.location.href = "dashboard.html";
+}
+
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   errorDiv.textContent = "";
 
   const username = loginForm.username.value.trim();
   const password = loginForm.password.value.trim();
+  const rememberMe = document.getElementById("rememberMe")?.checked; // ✅ new line
 
   if (!username || !password) {
     errorDiv.textContent = "Please enter username and password.";
@@ -42,8 +50,14 @@ loginForm.addEventListener("submit", async (e) => {
     }
 
     // ✅ Login successful - save data and redirect
-    localStorage.setItem("homestayId", homestayDoc.id);
-    localStorage.setItem("homestayName", data.name);
+    if (rememberMe) {
+      localStorage.setItem("homestayId", homestayDoc.id);
+      localStorage.setItem("homestayName", data.name);
+    } else {
+      sessionStorage.setItem("homestayId", homestayDoc.id);
+      sessionStorage.setItem("homestayName", data.name);
+    }
+
     window.location.href = "dashboard.html";
   } catch (error) {
     errorDiv.textContent = "Error during login: " + error.message;

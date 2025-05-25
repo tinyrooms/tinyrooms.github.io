@@ -1,5 +1,7 @@
 // Firebase setup assumed
-const homestayId = localStorage.getItem("homestayId");
+const homestayId =
+  localStorage.getItem("homestayId") || sessionStorage.getItem("homestayId");
+
 const homestayNameEl = document.getElementById("homestayName");
 const occupancyEl = document.getElementById("occupancy");
 const guestsCardsContainer = document.getElementById("guestsCardsContainer");
@@ -36,7 +38,10 @@ document.addEventListener("firebaseReady", () => {
       const doc = await window.db.collection("homestays").doc(homestayId).get();
       if (!doc.exists || doc.data().blocked) {
         alert("You are blocked. Logging out...");
-        localStorage.clear();
+        localStorage.removeItem("homestayId");
+        localStorage.removeItem("homestayName");
+        sessionStorage.removeItem("homestayId");
+        sessionStorage.removeItem("homestayName");
         window.location.href = "index.html";
       }
     } catch (err) {
