@@ -251,48 +251,50 @@
         }
       }
 
-      async function loadHomestays() {
-        db.collection("homestays").onSnapshot(
-          async (snapshot) => {
-            cardsContainer.innerHTML = "";
-            // Using Promise.all so that all auto-block checks complete before rendering
-            const cards = await Promise.all(
-              snapshot.docs.map(async (doc) => {
-                const data = doc.data();
+      window.dbReady.then(() => {
+        async function loadHomestays() {
+          db.collection("homestays").onSnapshot(
+            async (snapshot) => {
+              cardsContainer.innerHTML = "";
+              // Using Promise.all so that all auto-block checks complete before rendering
+              const cards = await Promise.all(
+                snapshot.docs.map(async (doc) => {
+                  const data = doc.data();
 
-                // Auto block if expired
-                await checkAndBlockIfExpired(doc.id, data);
+                  // Auto block if expired
+                  await checkAndBlockIfExpired(doc.id, data);
 
-                return createCard(doc.id, {
-                  name: data.name,
-                  username: data.username,
-                  password: data.password,
-                  phone: data.phone,
-                  totalRooms: data.totalRooms,
-                  transactionId: data.transactionId,
-                  planAmount: data.planAmount,
-                  planDurationMonths: data.planDurationMonths,
-                  accountCreated: data.accountCreated,
-                  planExpires: data.planExpires,
-                  blocked: data.blocked ?? false,
-                });
-              })
-            );
+                  return createCard(doc.id, {
+                    name: data.name,
+                    username: data.username,
+                    password: data.password,
+                    phone: data.phone,
+                    totalRooms: data.totalRooms,
+                    transactionId: data.transactionId,
+                    planAmount: data.planAmount,
+                    planDurationMonths: data.planDurationMonths,
+                    accountCreated: data.accountCreated,
+                    planExpires: data.planExpires,
+                    blocked: data.blocked ?? false,
+                  });
+                })
+              );
 
-            cards.forEach((card) => cardsContainer.appendChild(card));
-          },
-          (err) => {
-            cardsContainer.innerHTML = `<p style="text-align:center; color:red;">Error loading homestays: ${err.message}</p>`;
-          }
-        );
-      }
+              cards.forEach((card) => cardsContainer.appendChild(card));
+            },
+            (err) => {
+              cardsContainer.innerHTML = `<p style="text-align:center; color:red;">Error loading homestays: ${err.message}</p>`;
+            }
+          );
+        }
 
-      function logout() {
-        // Clear session or auth tokens here if needed
-        window.location.href = "/index.html"; // Redirect to your login or home page
-      }
+        loadHomestays();
+      });
 
-      loadHomestays();
+        function logout() {
+          // Clear session or auth tokens here if needed
+          window.location.href = "/index.html"; // Redirect to your login or home page
+        }
     </script>
   </body>
 </html>

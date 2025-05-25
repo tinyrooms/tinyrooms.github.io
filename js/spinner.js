@@ -1,34 +1,21 @@
 // firebase-config.js
 
-/*function fetchFirebaseConfigSync(url) {
-  const xhr = new XMLHttpRequest();
-  xhr.open("GET", url, false); // false = synchronous request
-  xhr.send(null);
-  if (xhr.status === 200) {
-    return JSON.parse(xhr.responseText);
-  } else {
-    throw new Error("Failed to fetch Firebase config synchronously");
-  }
-}
+let firebaseConfig;
 
-const firebaseConfig = fetchFirebaseConfigSync(
-  "https://firebase-config-server-cg75.onrender.com/api/firebase-config"
-);
+const dbReady = fetch("https://firebase-config-server-cg75.onrender.com/api/config") // replace with actual URL
+  .then((res) => res.json())
+  .then((config) => {
+    firebaseConfig = config;
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();*/
+    firebase.initializeApp(firebaseConfig);
+    console.log("Firebase initialized");
 
+    window.db = firebase.firestore();
+    console.log("db is set globally");
+  })
+  .catch((err) => {
+    console.error("Firebase config fetch failed:", err);
+  });
 
-// firebase-config.js
-const firebaseConfig = {
-  apiKey: "AIzaSyDJ8sLIFTNVTG19bTS_ceaCFFvFjfjWcs0",
-  authDomain: "tinyrooms-66761.firebaseapp.com",
-  projectId: "tinyrooms-66761",
-  storageBucket: "tinyrooms-66761.firebasestorage.app",
-  messagingSenderId: "360096531553",
-  appId: "1:360096531553:web:22298f4bd619681bda1620",
-  measurementId: "G-936FJ0KH6M",
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+// Optional: expose dbReady for waiting if needed
+window.dbReady = dbReady;

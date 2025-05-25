@@ -28,23 +28,31 @@ if (!homestayId) {
   window.location.href = "index.html";
 }
 
-// Blocked status check
-async function checkBlockedStatus() {
-  const doc = await db.collection("homestays").doc(homestayId).get();
-  if (!doc.exists || doc.data().blocked) {
-    alert("You are blocked. Logging out...");
-    localStorage.clear();
-    window.location.href = "index.html";
+document.addEventListener("firebaseReady", () => {
+  // Now db is ready, you can safely use it
+
+  async function checkBlockedStatus() {
+    try {
+      const doc = await window.db.collection("homestays").doc(homestayId).get();
+      if (!doc.exists || doc.data().blocked) {
+        alert("You are blocked. Logging out...");
+        localStorage.clear();
+        window.location.href = "index.html";
+      }
+    } catch (err) {
+      console.error("Error checking blocked status:", err);
+    }
   }
-}
-checkBlockedStatus();
-setInterval(checkBlockedStatus, 10000);
+
+  checkBlockedStatus();
+  setInterval(checkBlockedStatus, 10000);
+});
 
 // Button events
 document.getElementById("logoutBtn").onclick = () => {
   localStorage.clear();
   window.location.href = "index.html";
-};
+}
 document.getElementById("addGuestBtn").onclick = () => {
   window.location.href = "checkin.html";
 };
@@ -240,26 +248,29 @@ function renderPreviousGuests(previousGuests) {
 }
 
 // Real-time listener for previous guests (no index required)
-function listenToPreviousGuests() {
-  db.collection("previousCustomers")
-    .where("homestayId", "==", homestayId)
-    .onSnapshot(
-      (snapshot) => {
-        const previousGuests = snapshot.docs
-          .map((doc) => doc.data())
-          .sort((a, b) => {
-            const timeA = a.timestamp?.seconds || 0;
-            const timeB = b.timestamp?.seconds || 0;
-            return timeB - timeA;
-          });
-        renderPreviousGuests(previousGuests);
-      },
-      (err) => {
-        console.error("Failed to load previous guests", err);
-        previousGuestsContainer.textContent = "Failed to load previous guests.";
-      }
-    );
-}
+window.dbReady.then(() => {
+  function listenToPreviousGuests() {
+    db.collection("previousCustomers")
+      .where("homestayId", "==", homestayId)
+      .onSnapshot(
+        (snapshot) => {
+          const previousGuests = snapshot.docs
+            .map((doc) => doc.data())
+            .sort((a, b) => {
+              const timeA = a.timestamp?.seconds || 0;
+              const timeB = b.timestamp?.seconds || 0;
+              return timeB - timeA;
+            });
+          renderPreviousGuests(previousGuests);
+        },
+        (err) => {
+          console.error("Failed to load previous guests", err);
+          previousGuestsContainer.textContent =
+            "Failed to load previous guests.";
+        }
+      );
+  };
+
 
 // Filter by search
 searchInput.addEventListener("input", () => {
@@ -279,22 +290,25 @@ editModal.addEventListener("click", (e) => {
 });
 
 // Load homestay name
-db.collection("homestays")
-  .doc(homestayId)
-  .get()
-  .then((doc) => {
-    homestayNameEl.textContent = doc.data()?.name || "Homestay";
-  })
-  .catch(console.error);
+window.dbReady.then(() => {
+  db.collection("homestays")
+    .doc(homestayId)
+    .get()
+    .then((doc) => {
+      homestayNameEl.textContent = doc.data()?.name || "Homestay";
+    })
+    .catch(console.error);
 
-// Real-time updates for current guests
-db.collection("guests")
-  .where("homestayId", "==", homestayId)
-  .onSnapshot((snapshot) => {
-    allGuests = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    occupancyEl.textContent = `Currently ${allGuests.length} guest(s) staying`;
-    renderGuests(allGuests);
-  });
+  db.collection("guests")
+    .where("homestayId", "==", homestayId)
+    .onSnapshot((snapshot) => {
+      allGuests = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      occupancyEl.textContent = `Currently ${allGuests.length} guest(s) staying`;
+      renderGuests(allGuests);
+    });
+});
+
 
 // Start previous guests listener
 listenToPreviousGuests();
+});
