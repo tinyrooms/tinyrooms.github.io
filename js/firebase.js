@@ -2,7 +2,7 @@
 
 let firebaseConfig;
 
-const dbReady = fetch("https://firebase-config-server-cg75.onrender.com/api/config") // replace with actual URL
+const dbReady = fetch("https://firebase-config-server-sowd.onrender.com/api/config") // replace with actual URL
   .then((res) => res.json())
   .then((config) => {
     firebaseConfig = config;
