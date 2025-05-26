@@ -54,9 +54,15 @@ document.addEventListener("firebaseReady", () => {
 });
 
 // Button events
+function logout() {
+  localStorage.removeItem("homestayId");
+  localStorage.removeItem("homestayName");
+  sessionStorage.removeItem("homestayId");
+  sessionStorage.removeItem("homestayName");
+  window.location.href = "/index.html"; // or wherever your login page is
+}
 document.getElementById("logoutBtn").onclick = () => {
-  localStorage.clear();
-  window.location.href = "index.html";
+  logout();
 }
 document.getElementById("addGuestBtn").onclick = () => {
   window.location.href = "checkin.html";

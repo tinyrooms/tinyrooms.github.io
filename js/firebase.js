@@ -1,21 +1,27 @@
-// firebase-config.js
+const SHARED_SECRET = "my_super_secret_123"; // Visible in frontend for now
 
-let firebaseConfig;
+window.dbReady = (async function loadFirebaseConfig() {
+  try {
+    const res = await fetch(
+      "https://firebase-config-server-sowd.onrender.com/api/config",
+      {
+        headers: {
+          Authorization: `Bearer ${SHARED_SECRET}`,
+        },
+      }
+    );
 
-const dbReady = fetch("https://firebase-config-server-sowd.onrender.com/api/config") // replace with actual URL
-  .then((res) => res.json())
-  .then((config) => {
-    firebaseConfig = config;
+    if (!res.ok) {
+      throw new Error("Failed to fetch Firebase config: " + res.statusText);
+    }
+
+    const firebaseConfig = await res.json();
 
     firebase.initializeApp(firebaseConfig);
-    console.log("Firebase initialized");
-
     window.db = firebase.firestore();
-    console.log("db is set globally");
-  })
-  .catch((err) => {
-    console.error("Firebase config fetch failed:", err);
-  });
-
-// Optional: expose dbReady for waiting if needed
-window.dbReady = dbReady;
+    console.log("Firebase initialized and Firestore is ready");
+  } catch (err) {
+    console.error("Error loading Firebase config:", err);
+    throw err; // rethrow so downstream knows loading failed
+  }
+})();
