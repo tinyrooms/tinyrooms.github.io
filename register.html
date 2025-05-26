@@ -483,10 +483,7 @@
 
             loaderWrapper.style.display = "flex";
             setTimeout(async () => {
-              loaderWrapper.style.display = "none";
-              progressSection.style.display = "none";
-              thankYouCard.style.display = "block";
-
+              // Save data to Firebase during the loading period
               await db.collection("homestays").add({
                 name,
                 username,
@@ -500,14 +497,19 @@
                 planExpires: expiryDate.toLocaleString("en-IN"),
                 blocked: true,
               });
-            }, 2000);
+
+              // Only show thank you card after Firebase save is complete
+              loaderWrapper.style.display = "none";
+              progressSection.style.display = "none";
+              thankYouCard.style.display = "block";
+            }, 8000);
           } catch (err) {
             console.error(err);
             loaderWrapper.style.display = "none";
             messageDiv.textContent = "Something went wrong. Try again.";
             messageDiv.style.display = "block";
           }
-        }, 3000);
+        }, 5000);
       });
     </script>
   </body>

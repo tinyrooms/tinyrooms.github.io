@@ -14,11 +14,16 @@ loginForm.addEventListener("submit", async (e) => {
 
   const username = loginForm.username.value.trim();
   const password = loginForm.password.value.trim();
-  const rememberMe = document.getElementById("rememberMe")?.checked; // ✅ new line
+  const rememberMe = document.getElementById("rememberMe")?.checked;
 
   if (!username || !password) {
     errorDiv.textContent = "Please enter username and password.";
     return;
+  }
+
+  // Show loading animation
+  if (window.showLoader) {
+    window.showLoader();
   }
 
   try {
@@ -30,6 +35,10 @@ loginForm.addEventListener("submit", async (e) => {
       .get();
 
     if (querySnapshot.empty) {
+      // Hide loader and show error
+      if (window.hideLoader) {
+        window.hideLoader();
+      }
       errorDiv.textContent = "Invalid username or password.";
       return;
     }
@@ -38,18 +47,26 @@ loginForm.addEventListener("submit", async (e) => {
     const data = homestayDoc.data();
 
     if (data.password !== password) {
+      // Hide loader and show error
+      if (window.hideLoader) {
+        window.hideLoader();
+      }
       errorDiv.textContent = "Invalid username or password.";
       return;
     }
 
-    // 🚫 Check if user is blocked
+    // Check if user is blocked
     if (data.blocked === true) {
+      // Hide loader and show error
+      if (window.hideLoader) {
+        window.hideLoader();
+      }
       errorDiv.textContent =
         "Your access has been blocked. Please contact support.";
       return;
     }
 
-    // ✅ Login successful - save data and redirect
+    // Login successful - save data and redirect
     if (rememberMe) {
       localStorage.setItem("homestayId", homestayDoc.id);
       localStorage.setItem("homestayName", data.name);
@@ -58,8 +75,17 @@ loginForm.addEventListener("submit", async (e) => {
       sessionStorage.setItem("homestayName", data.name);
     }
 
+    // Hide loader before redirect
+    if (window.hideLoader) {
+      window.hideLoader();
+    }
+
     window.location.href = "dashboard.html";
   } catch (error) {
+    // Hide loader and show error
+    if (window.hideLoader) {
+      window.hideLoader();
+    }
     errorDiv.textContent = "Error during login: " + error.message;
   }
 });

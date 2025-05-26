@@ -57,8 +57,19 @@
       color: white;
     }
 
-    button[type="submit"]:hover {
+    button[type="submit"]:hover:not(:disabled) {
       background-color: #27ae60;
+    }
+
+    /* Add these styles for disabled button */
+    button[type="submit"]:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #95a5a6 !important;
+    }
+
+    button[type="submit"]:disabled:hover {
+      background-color: #95a5a6 !important;
     }
 
     #registerBtn {
@@ -370,7 +381,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>  
   <script src="/js/firebase.js"></script>
-  <script src="/js/login.js"></script>
 
   <script>
     // Disable right-click context menu gently
@@ -397,10 +407,14 @@
       loader.style.display = 'flex';
     }
 
-    // Login form submit: show loader immediately
-    document.getElementById('loginForm').addEventListener('submit', function (e) {
-      showLoader();
-    });
+    // Hide loader
+    function hideLoader() {
+      loader.style.display = 'none';
+    }
+
+    // Make functions globally available for login.js
+    window.showLoader = showLoader;
+    window.hideLoader = hideLoader;
 
     // Register button with delay and loader
     document.getElementById('registerBtn').addEventListener('click', function () {
@@ -419,5 +433,8 @@
       }, 1500); // 1.5 seconds delay
     });
   </script>
+
+  <!-- Load login.js after making functions available -->
+  <script src="/js/login.js"></script>
 </body>
 </html>
