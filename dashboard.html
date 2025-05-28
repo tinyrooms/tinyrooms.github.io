@@ -275,6 +275,92 @@
       .tab-button:hover {
         background: #bdc3c7;
       }
+
+      /* Statistics Styles */
+      .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .stat-card {
+        background: #fff;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        text-align: center;
+      }
+
+      .stat-card h3 {
+        margin: 0 0 10px;
+        font-size: 1.1rem;
+        color: #34495e;
+      }
+
+      .stat-card .stat-value {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 5px 0;
+      }
+
+      .stat-card .stat-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+      }
+
+      .period-selector {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .period-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        background: #ecf0f1;
+        color: #2c3e50;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .period-btn.active {
+        background: #3498db;
+        color: white;
+      }
+
+      .period-btn:hover {
+        background: #bdc3c7;
+      }
+
+      .revenue-breakdown {
+        background: #fff;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        margin-bottom: 20px;
+      }
+
+      .revenue-breakdown h3 {
+        margin: 0 0 15px;
+        color: #34495e;
+      }
+
+      .revenue-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #ecf0f1;
+      }
+
+      .revenue-item:last-child {
+        border-bottom: none;
+        font-weight: 600;
+        color: #2c3e50;
+      }
     </style>
   </head>
   <body>
@@ -287,9 +373,10 @@
     </header>
 
     <section>
-      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
         <button id="tabCurrent" class="tab-button active">Current Guests</button>
         <button id="tabPrevious" class="tab-button">Previous Customers</button>
+        <button id="tabStatistics" class="tab-button">Statistics</button>
       </div>
 
       <div id="tabContentCurrent">
@@ -309,6 +396,91 @@
         <h2>Previous Customers</h2>
         <div class="cards-container" id="previousGuestsContainer">
           No previous guests yet.
+        </div>
+      </div>
+
+      <div id="tabContentStatistics" style="display: none;">
+        <h2>Business Statistics</h2>
+        
+        <div class="period-selector">
+          <button class="period-btn active" data-period="all">All Time</button>
+          <button class="period-btn" data-period="month">This Month</button>
+          <button class="period-btn" data-period="week">This Week</button>
+          <button class="period-btn" data-period="today">Today</button>
+        </div>
+
+        <div class="stats-container">
+          <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <div class="stat-value" id="totalRevenue">₹0</div>
+            <div class="stat-label">All time earnings</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Total Guests</h3>
+            <div class="stat-value" id="totalGuests">0</div>
+            <div class="stat-label">Guests served</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Average Stay</h3>
+            <div class="stat-value" id="averageStay">0</div>
+            <div class="stat-label">Nights per guest</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Occupancy Rate</h3>
+            <div class="stat-value" id="occupancyRate">0%</div>
+            <div class="stat-label">Current occupancy</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Avg Revenue/Guest</h3>
+            <div class="stat-value" id="avgRevenuePerGuest">₹0</div>
+            <div class="stat-label">Per guest average</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Peak Month</h3>
+            <div class="stat-value" id="peakMonthRevenue">₹0</div>
+            <div class="stat-label" id="peakMonthName">No data</div>
+          </div>
+        </div>
+
+        <div class="revenue-breakdown">
+          <h3>Revenue Breakdown</h3>
+          <div class="revenue-item">
+            <span>Room Revenue:</span>
+            <span id="roomRevenue">₹0</span>
+          </div>
+          <div class="revenue-item">
+            <span>Orders Revenue:</span>
+            <span id="ordersRevenue">₹0</span>
+          </div>
+          <div class="revenue-item">
+            <span>Total Revenue:</span>
+            <span id="totalRevenueBreakdown">₹0</span>
+          </div>
+        </div>
+
+        <div class="stats-container">
+          <div class="stat-card">
+            <h3>Monthly Revenue</h3>
+            <div class="stat-value" id="monthlyRevenue">₹0</div>
+            <div class="stat-label">This month</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Weekly Revenue</h3>
+            <div class="stat-value" id="weeklyRevenue">₹0</div>
+            <div class="stat-label">This week</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Daily Revenue</h3>
+            <div class="stat-value" id="dailyRevenue">₹0</div>
+            <div class="stat-label">Today</div>
+          </div>
         </div>
       </div>
     </section>
@@ -356,21 +528,32 @@
       // Tab switcher
       const tabCurrent = document.getElementById("tabCurrent");
       const tabPrevious = document.getElementById("tabPrevious");
+      const tabStatistics = document.getElementById("tabStatistics");
       const contentCurrent = document.getElementById("tabContentCurrent");
       const contentPrevious = document.getElementById("tabContentPrevious");
+      const contentStatistics = document.getElementById("tabContentStatistics");
+
+      function showTab(activeTab, activeContent) {
+        // Remove active class from all tabs
+        [tabCurrent, tabPrevious, tabStatistics].forEach(tab => tab.classList.remove("active"));
+        // Hide all content
+        [contentCurrent, contentPrevious, contentStatistics].forEach(content => content.style.display = "none");
+        
+        // Show active tab and content
+        activeTab.classList.add("active");
+        activeContent.style.display = "block";
+      }
 
       tabCurrent.addEventListener("click", () => {
-        tabCurrent.classList.add("active");
-        tabPrevious.classList.remove("active");
-        contentCurrent.style.display = "block";
-        contentPrevious.style.display = "none";
+        showTab(tabCurrent, contentCurrent);
       });
 
       tabPrevious.addEventListener("click", () => {
-        tabPrevious.classList.add("active");
-        tabCurrent.classList.remove("active");
-        contentPrevious.style.display = "block";
-        contentCurrent.style.display = "none";
+        showTab(tabPrevious, contentPrevious);
+      });
+
+      tabStatistics.addEventListener("click", () => {
+        showTab(tabStatistics, contentStatistics);
       });
 
       // Disable right-click
