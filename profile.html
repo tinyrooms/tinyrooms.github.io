@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Item Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f4f6f9;
+      padding: 30px;
+      color: #333;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    input, button {
+      font-size: 1rem;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    .item-list {
+      margin-top: 20px;
+    }
+    .item {
+      background: white;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .item-actions button {
+      margin-left: 5px;
+    }
+    .delete-btn {
+      background: #e74c3c;
+    }
+    .edit-btn {
+      background: #f39c12;
+    }
+
+    /* Loader Styles */
+    #loaderWrapper {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      display: none;
+    }
+    .loader {
+      width: 80px;
+      height: 50px;
+      position: relative;
+    }
+    .loader-text {
+      position: absolute;
+      top: 0;
+      padding: 0;
+      margin: 0;
+      color: #3498db;
+      animation: text_713 3.5s ease both infinite;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+    .load {
+      background-color: #2ecc71;
+      border-radius: 50px;
+      display: block;
+      height: 16px;
+      width: 16px;
+      bottom: 0;
+      position: absolute;
+      transform: translateX(64px);
+      animation: loading_713 3.5s ease both infinite;
+    }
+    .load::before {
+      position: absolute;
+      content: "";
+      width: 100%;
+      height: 100%;
+      background-color: #f5f7fa;
+      border-radius: inherit;
+      animation: loading2_713 3.5s ease both infinite;
+    }
+    #editModal {
+  display: none;
+}
+    @keyframes text_713 {
+      0% { letter-spacing: 1px; transform: translateX(0px); }
+      40% { letter-spacing: 2px; transform: translateX(26px); }
+      80% { letter-spacing: 1px; transform: translateX(32px); }
+      90% { letter-spacing: 2px; transform: translateX(0px); }
+      100% { letter-spacing: 1px; transform: translateX(0px); }
+    }
+    @keyframes loading_713 {
+      0% { width: 16px; transform: translateX(0px); }
+      40% { width: 100%; transform: translateX(0px); }
+      80% { width: 16px; transform: translateX(64px); }
+      90% { width: 100%; transform: translateX(0px); }
+      100% { width: 16px; transform: translateX(0px); }
+    }
+    @keyframes loading2_713 {
+      0% { transform: translateX(0px); width: 16px; }
+      40% { transform: translateX(0%); width: 80%; }
+      80% { width: 100%; transform: translateX(0px); }
+      90% { width: 80%; transform: translateX(15px); }
+      100% { transform: translateX(0px); width: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>  <button class="back-btn" onclick="window.location.href='dashboard.html'">
+    ← Back
+  </button> Manage Items</h1>
+
+
+  <input type="text" id="itemName" placeholder="Item name" />
+  <input type="number" id="itemPrice" placeholder="Price" min="0" />
+  <button id="addItemBtn">Add Item</button>
+
+  <br><br>
+  <input type="text" id="searchInput" placeholder="Search items..." style="width: 300px;" />
+
+  <div class="item-list" id="itemList"></div>
+
+  <!-- Loader overlay -->
+  <div id="loaderWrapper">
+    <div class="loader">
+      <span class="loader-text">loading</span>
+      <span class="load"></span>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div id="editModal" style="
+  display: none; 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0,0,0,0.4); 
+  z-index: 10000; 
+  justify-content: center; 
+  align-items: center;
+">
+
+    <div style="
+      background: white; 
+      padding: 30px 40px; 
+      border-radius: 12px; 
+      width: 400px; 
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      font-family: 'Poppins', sans-serif;
+    ">
+      <h2 style="margin-bottom: 20px; text-align: center;">Edit Item</h2>
+      
+      <label for="editItemName" style="font-weight: 600;">Item Name:</label>
+      <input type="text" id="editItemName" style="
+        width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc;
+      " />
+
+      <label for="editItemPrice" style="font-weight: 600;">Price:</label>
+      <input type="number" id="editItemPrice" style="
+        width: 100%; padding: 10px; margin-bottom: 30px; border-radius: 8px; border: 1px solid #ccc;
+      " />
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button id="saveEditBtn" style="
+          background: #2ecc71; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;
+        ">Save</button>
+        <button id="cancelEditBtn" style="
+          background: #e74c3c; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;
+        ">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="/js/firebase.js"></script>
+  <script src="/js/profile.js"></script>
+
+  <script>
+    const loader = document.getElementById('loaderWrapper');
+    window.showLoader = () => loader.style.display = 'flex';
+    window.hideLoader = () => loader.style.display = 'none';
+  </script>
+
+</body>
+</html>
